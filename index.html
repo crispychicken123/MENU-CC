@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management System Pro</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-size: 14px; }
+
+        /* Helpers */
+        .hidden { display: none !important; }
+        .text-red { color: var(--danger); }
+        .text-green { color: var(--success); }
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .flex-col { display: flex; gap: 10px; flex-direction: column; }
+        .w-full { width: 100%; }
+        .mt-2 { margin-top: 1rem; }
+        .p-2 { padding: 1rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .text-right { text-align: right; }
+
+        /* Buttons & Inputs */
+        button {
+            background-color: var(--primary); color: white; border: none; padding: 10px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+            display: inline-flex; align-items: center; justify-content: center;
+        }
+        button:hover { background-color: var(--primary-dark); }
+        button.danger { background-color: var(--danger); }
+        button.secondary { background-color: var(--secondary); }
+        button.sm { padding: 6px 12px; font-size: 0.8rem; }
+        
+        input, select {
+            padding: 10px; border: 1px solid var(--border); border-radius: 6px;
+            width: 100%; margin-bottom: 8px; font-size: 0.95rem;
+        }
+        input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+        input.numeric { text-align: right; }
+        
+        /* Wider inputs for Variance table */
+        .compact-input { width: 100px !important; text-align: center; padding: 8px; margin-bottom: 0; }
+
+        /* Layout */
+        #login-screen {
+            height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        .login-card {
+            background: var(--surface); padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 380px;
+            text-align: center;
+        }
+
+        #app-screen { display: flex; flex-direction: column; min-height: 100vh; }
+        
+        header {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        nav {
+            background: var(--surface); padding: 0 1rem; border-bottom: 1px solid var(--border);
+            overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+        }
+        nav button {
+            background: none; color: var(--secondary); border-radius: 0; padding: 12px 16px;
+            border-bottom: 3px solid transparent; font-weight: 600;
+        }
+        nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
+        nav button:hover { background-color: var(--bg); }
+
+        main { padding: 1.5rem; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* Cards & Tables */
+        .card {
+            background: var(--surface); border-radius: 8px; padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+        th { background-color: var(--bg); color: var(--secondary); white-space: nowrap; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
+        tr.total-row td { font-weight: bold; background-color: #f8fafc; border-top: 2px solid var(--border); }
+        tr.variance-row td { font-weight: bold; color: var(--text); border-top: 2px solid var(--border); }
+        
+        /* Toast */
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        #toast.show { opacity: 1; }
+
+        /* Dynamic Recipe Form */
+        .ingredient-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .ingredient-row select { width: 45%; margin-bottom: 0; }
+        .ingredient-row input { width: 35%; margin-bottom: 0; }
+        
+        /* Print Styles */
+        @media print {
+            nav, header, .no-print, button, input, select { display: none !important; }
+            .card { border: none; box-shadow: none; padding: 0; margin: 0; }
+            body { background: white; }
+            #app-screen { display: block; }
+            section { display: block !important; margin-bottom: 2rem; }
+            table { width: 100%; font-size: 10px; }
+            th, td { border: 1px solid #000; padding: 4px; }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            nav { padding: 0; }
+            header { flex-direction: column; gap: 10px; text-align: center; }
+            .compact-input { width: 70px !important; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Action Successful</div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2 style="color: var(--primary); margin-bottom: 5px;">Resto Manager</h2>
+            <p style="color: var(--secondary); margin-top:0; font-size: 0.9rem;">Inventory & Variance System</p>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required autocomplete="username">
+                <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+                <button type="submit" class="w-full">Login</button>
+            </form>
+            <p id="loginError" class="text-red mt-2 hidden">Invalid Credentials</p>
+            <div style="font-size: 0.75rem; text-align: left; background: #f1f5f9; padding: 10px; margin-top:15px; border-radius: 4px; color: var(--secondary);">
+                <strong>Demo Credentials:</strong><br>
+                Admin: admin / 1234<br>
+                Branch: BR01 / 1111
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="app-screen" class="hidden">
+        <header>
+            <div>
+                <h3 id="headerBranchName" style="margin:0;">Branch Name</h3>
+                <small id="headerUserRole" style="color: var(--secondary);"></small>
+            </div>
+            <button onclick="logout()" class="secondary sm">Logout</button>
+        </header>
+
+        <nav id="mainNav"></nav>
+
+        <main>
+            <!-- DASHBOARD -->
+            <section id="view-dashboard" class="view-section">
+                <div class="card" style="background: linear-gradient(to right, var(--primary), var(--primary-dark)); color: white;">
+                    <h2 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">Quick Summary</h2>
+                    <div class="flex" style="justify-content: space-around; padding: 20px 0;">
+                        <div style="text-align: center;">
+                            <label style="opacity: 0.9; display:block;">Today's Transactions</label>
+                            <h1 id="dashTodaySales" style="margin: 10px 0 0 0; font-size: 2.5rem;">0</h1>
+                        </div>
+                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px;">
+                            <label style="opacity: 0.9; display:block;">Total Meals Sold</label>
+                            <h1 id="dashTodayMeals" style="margin: 10px 0 0 0; font-size: 2.5rem;">0</h1>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SALES ENTRY -->
+            <section id="view-sales" class="view-section hidden">
+                <div class="card">
+                    <h2>Daily Sales Entry</h2>
+                    <form id="salesForm" class="flex" style="flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 140px;">
+                            <label>Date</label>
+                            <input type="date" id="saleDate" required>
+                        </div>
+                        <div style="flex: 2; min-width: 200px;">
+                            <label>Menu Item</label>
+                            <select id="saleMeal" required></select>
+                        </div>
+                        <div style="flex: 1; min-width: 80px;">
+                            <label>Qty</label>
+                            <input type="number" id="saleQty" min="1" placeholder="Qty" required class="numeric">
+                        </div>
+                        <div>
+                            <button type="submit">Add Sale</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="flex" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>Sales Log</h3>
+                        <input type="text" id="salesSearch" placeholder="Search date or meal..." onkeyup="renderSalesTable()" style="max-width: 200px; margin-bottom:0;">
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Item Name</th>
+                                    <th class="text-right">Qty</th>
+                                    <th class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECIPES (ADMIN) -->
+            <section id="view-recipes" class="view-section hidden">
+                <div class="card admin-only hidden" style="border-left: 5px solid var(--primary);">
+                    <h2>Manage Recipes</h2>
+                    <div class="text-red" style="background: #fef2f2; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size:0.85rem;">
+                        <strong>Note:</strong> All menu items exist, but ingredients are empty. You must edit items and add ingredients (Chicken, Buns, etc.) for the General Waste Analysis to work accurately.
+                    </div>
+                    <form id="recipeForm">
+                        <div class="flex mb-2">
+                            <input type="text" id="recName" placeholder="Meal Name (e.g. Zinger Meal)" required style="flex:2;">
+                            <input type="hidden" id="recId">
+                            <button type="submit" style="flex:0.5;">Save</button>
+                        </div>
+                        
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 4px; border: 1px solid var(--border);">
+                            <label style="font-weight: 600; display:block; margin-bottom: 10px;">Ingredients:</label>
+                            <div id="recipeIngredientsList"></div>
+                            <button type="button" onclick="addIngredientRow()" class="secondary sm">+ Add Ingredient</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="flex" style="justify-content: space-between; align-items: center;">
+                        <h3>Recipe List</h3>
+                        <input type="text" id="recipeSearch" placeholder="Search..." onkeyup="renderRecipesTable()" style="max-width: 200px; margin-bottom:0;">
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Meal Name</th>
+                                    <th>Ingredients</th>
+                                    <th class="admin-only hidden">Control</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipeTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INVENTORY & ANALYSIS -->
+            <section id="view-inventory" class="view-section hidden">
+                
+                <!-- Date Selection -->
+                <div class="card no-print" style="background: #e2e8f0; border: none;">
+                    <div class="flex" style="margin-bottom: 0;">
+                        <div style="flex:1;">
+                            <label>Analysis Start Date</label>
+                            <input type="date" id="invStartDate" style="margin-bottom:0;">
+                        </div>
+                        <div style="flex:1;">
+                            <label>Analysis End Date</label>
+                            <input type="date" id="invEndDate" style="margin-bottom:0;">
+                        </div>
+                        <div style="display:flex; align-items:flex-end;">
+                            <button onclick="syncSalesToVariance()" type="button" class="secondary" style="height: 42px; white-space:nowrap;">
+                                ⚡ Auto-Fill Sales from Records
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VARIANCE TABLE (New Feature) -->
+                <div class="card" style="border-top: 5px solid var(--primary);">
+                    <div class="flex" style="justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="margin:0;">Variance Analysis (Shortening & Flour)</h2>
+                            <p style="margin:5px 0 0 0; color: var(--secondary); font-size: 0.85rem;">
+                                Sold quantities are calculated from your Sales Records based on the date range above.
+                            </p>
+                        </div>
+                        <button onclick="window.print()" class="secondary sm no-print">🖨️ Print Report</button>
+                    </div>
+                    
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table id="varianceTable">
+                            <thead>
+                                <tr>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">CATEGORY</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">SOLD (Qty)</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Short Coef</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Flour Coef</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Theo Short</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Theo Flour</th>
+                                </tr>
+                            </thead>
+                            <tbody id="varianceTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex mt-2" style="justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                        <!-- Inventory Inputs Table -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h4>Physical Inventory Counts</h4>
+                            <table style="border: 1px solid #eee; margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Open</th>
+                                        <th>Purchase</th>
+                                        <th>End</th>
+                                        <th>Actual Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>SHORTENING (KG)</td>
+                                        <td><input type="number" step="0.01" id="var-short-open" class="compact-input" oninput="calcVariance()"></td>
+                                        <td><input type="number" step="0.01" id="var-short-buy" class="compact-input" oninput="calcVariance()"></td>
+                                        <td><input type="number" step="0.01" id="var-short-close" class="compact-input" oninput="calcVariance()"></td>
+                                        <td id="res-short-actual" style="font-weight:bold;">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>FLOUR (KG)</td>
+                                        <td><input type="number" step="0.01" id="var-flour-open" class="compact-input" oninput="calcVariance()"></td>
+                                        <td><input type="number" step="0.01" id="var-flour-buy" class="compact-input" oninput="calcVariance()"></td>
+                                        <td><input type="number" step="0.01" id="var-flour-close" class="compact-input" oninput="calcVariance()"></td>
+                                        <td id="res-flour-actual" style="font-weight:bold;">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Result Display -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h4>Variance Result (Over / Short)</h4>
+                            <table style="border: 1px solid #eee; background: #f9fafb;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 15px; width: 60%;">Shortening (KG)</td>
+                                        <td id="res-short-var" style="padding: 15px; font-size: 1.5rem; font-weight:bold;">0.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 15px;">Flour (KG)</td>
+                                        <td id="res-flour-var" style="padding: 15px; font-size: 1.5rem; font-weight:bold;">0.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="text-red no-print" style="font-size: 0.8rem; margin-top: 10px;">* Negative values indicate Shortage/Waste.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GENERAL INVENTORY -->
+                <div class="card">
+                    <div class="flex" style="justify-content: space-between;">
+                        <h2>General Inventory Analysis</h2>
+                    </div>
+                    <div style="max-height: 500px; overflow-y: auto; border: 1px solid #eee;">
+                        <table id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Item</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Unit</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Open</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Purch</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Close</th>
+                                    <th style="position: sticky; top: 0; background: var(--bg);">Actual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody"></tbody>
+                        </table>
+                    </div>
+                    <button onclick="runAnalysis()" class="mt-2 w-full" style="padding: 15px; font-weight: 600;">Calculate General Waste</button>
+                </div>
+
+                <div id="analysisResults" class="card hidden">
+                    <h2>Waste / Variance Report</h2>
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Theoretical</th>
+                                    <th>Actual</th>
+                                    <th>Variance</th>
+                                    <th>%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analysisTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- USERS -->
+            <section id="view-users" class="view-section hidden">
+                <div class="card admin-only hidden">
+                    <h2>User Management</h2>
+                    <form id="userForm" class="flex" style="flex-wrap: wrap;">
+                        <input type="text" id="newUser" placeholder="User ID" required>
+                        <input type="password" id="newPass" placeholder="Pass" required>
+                        <select id="newRole">
+                            <option value="branch">Branch</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <input type="text" id="newBranchName" placeholder="Branch Name">
+                        <button type="submit">Add User</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Branch</th>
+                                <th class="admin-only hidden">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. CONFIGURATION & DATA
+        // ==========================================
+        
+        // Master Ingredients List (34 Items) - Fixed spelling 'floor' to 'flour'
+        const INGREDIENTS = [
+            { id: 'chix', name: 'CHIX', unit: 'PCS' },
+            { id: 'strip', name: 'STRIP', unit: 'PCS' },
+            { id: 'beefburger', name: 'BEEFBURGER', unit: 'PCS' },
+            { id: 'beef125', name: 'Beef burger 125 g', unit: 'PCS' },
+            { id: 'chixburger', name: 'CHIX BURGER', unit: 'PCS' },
+            { id: 'zinger', name: 'ZINGER', unit: 'PCS' },
+            { id: 'fries', name: 'FRIES', unit: 'Kg' },
+            { id: 'chees', name: 'CHEES', unit: 'PCS' },
+            { id: 'garlic', name: 'GARLIC SUACE', unit: 'PCS' },
+            { id: 'closmall', name: 'SMALL CLOWSLOW', unit: 'PCS' },
+            { id: 'clobig', name: 'BIG CLOWSLOW', unit: 'PCS' },
+            { id: 'dyn', name: 'DYNAMTESAUCE', unit: 'PCS' },
+            { id: 'pepsi355', name: '(BIB )Pepsi 355. ML', unit: 'ML' },
+            { id: 'pepsi125', name: 'pepsi 1.25 liter', unit: 'PCS' },
+            { id: 'juiceL', name: 'LARGE JUICE', unit: 'Litre' },
+            { id: 'waterS', name: 'SMALL WATER', unit: 'PCS' },
+            { id: 'bun4', name: 'BUN 4 INCH', unit: 'PCS' },
+            { id: 'tortila', name: 'TORTILA', unit: 'PCS' },
+            { id: 'bun45', name: 'BUN 4.5 INCH', unit: 'PCS' },
+            { id: 'bun6', name: 'BUN 6 INCH', unit: 'PCS' },
+            { id: 'samolina', name: 'SAMOLINA 8 INCH', unit: 'PCS' },
+            { id: 'bun5', name: 'BUN 5', unit: 'PCS' },
+            { id: 'nugget', name: 'NUGGETS*4', unit: 'PCS' },
+            { id: 'juiceS', name: 'SMALL JUICE', unit: 'PCS' },
+            { id: 'popcorn', name: 'POP CORN*14', unit: 'PCS' },
+            { id: 'shawrma', name: 'SHAWRMA', unit: 'PCS' },
+            { id: 'rice', name: 'BASMATI RICE', unit: 'Kg' },
+            { id: 'kinza', name: 'KINZA COLA', unit: 'PCS' },
+            { id: 'floor', name: 'FLOUR', unit: 'Kg' }, // Fixed Name
+            { id: 'lettuce', name: 'lettuce', unit: 'Kg' },
+            { id: 'mayo', name: 'Mayonnaise', unit: 'Kg' },
+            { id: 'ketchup', name: 'ketchup', unit: 'PCS' },
+            { id: 'shortening', name: 'SHORTING', unit: 'Litre' },
+            { id: 'steak', name: 'steak 100 gram', unit: 'gram' }
+        ];
+
+        const defaultUsers = [
+            { user: "admin", pass: "1234", role: "admin", branch: "Main Branch" },
+            { user: "BR01", pass: "1111", role: "branch", branch: "Hamdan" },
+            { user: "BR02", pass: "2222", role: "branch", branch: "Mussafah" },
+            { user: "BR03", pass: "3333", role: "branch", branch: "Khalidiya" }
+        ];
+
+        // Enhanced Variance Configuration with Keywords for Smart Sync
+        const VARIANCE_CONFIG = [
+            { item: "CHICKEN", shortCoef: 0.11, flourCoef: 0.208, keywords: ["CHICKEN"], exclude: ["BURGER", "STRIPS", "ZINGER", "WINGS", "POP"] },
+            { item: "STRIPS", shortCoef: 0.005, flourCoef: 0.0225, keywords: ["STRIPS"] },
+            { item: "ZINGER", shortCoef: 0.015, flourCoef: 0.06, keywords: ["ZINGER"] },
+            { item: "CHICKEN BURGER", shortCoef: 0.015, flourCoef: 0, keywords: ["CHICKEN BURGER", "CHICKEN BUEGER"] }, // Handles typo in data
+            { item: "FRIES", shortCoef: 0.015, flourCoef: 0, keywords: ["FRIES"] },
+            { item: "NUGGETS", shortCoef: 0.015, flourCoef: 0, keywords: ["NUGGET"] },
+            { item: "POP CORN", shortCoef: 0.015, flourCoef: 0, keywords: ["POP CORN"] }
+        ];
+
+        // Menu Items List (Raw Names - Preserving Original Data)
+        const menuItemsList = [
+            "12 PCS PACKET MIX", "16 PCS PACKET MIX", "20 PCS PACKET MIX", "4 pcs chicken MIX Meal @ 5 AED",
+            "BUCKET MEAL MIX", "CHICKEN DAY MIX", "CHICKEN DAY MIX Noon", "Daily  MIX Meal",
+            "Daily MIX Meal Noon", "DAILY OFFER MIX Meal", "DAILY OFFER MIX Meal Noon", "ECONMY MEAL-MIX",
+            "Golden 4 meal mix", "IDEAL MEAL MIX", "MEGA  MEAL  MIX", "PKT STRIPS 20 MIX", "QUICK MIX",
+            "SPICIAL FAMILY MIX", "STRIPS FAMILY - MIX", "SUPER MEAL -  MIX", "Ultimate M Careem Offers",
+            "ULTIMATE MIX", "Ultimate M Noon Offers", "EXTRA CHEESE", "1/2  CHICKEN  Original",
+            "12 PCS PACKET Original", "16 PCS PACKET Original", "20 PCS PACKET Original", "4 pcs chicken Original Meal @ 5",
+            "BUCKET MEAL Original", "CHICKEN DAY Original", "CHICKEN DAY Original Noon", "CHICKEN STRIPS Original",
+            "DAILY OFFER Original Mea", "DAILY OFFER Original Meal Noon", "Daily Original Meal",
+            "Daily Original Meal Noon", "DEAL FOR ONE ( TWIST BOX )  Orig", "ECONMY MEAL Original",
+            "Golden 4 meal Normal", "IDEAL MEAL   Original", "MEGA MEAL Original", "NORMAL PCS",
+            "Offersn Mix meal @ 9 AED", "Offers Original meal @ 9 AED", "Offers Spicy  meal @ 9 AED",
+            "PKT STRIPS 20  Original", "QUICK NORMAL", "QUICK NORMAL  Employees", "QUICK NORMAL  Maintenanc",
+            "SAVING MEAL Original", "SPICIAL FAMILY Original", "Steak Combo", "STRIPS FAMILY  Original",
+            "SUPER  MEAL  Original", "TWIST BOX   Original", "Ultimate O Careem Offers", "Ultimate O Noon Offers",
+            "ULTIMATE Original", "1/2  CHICKEN   Spicy", "12 PCS PACKET Spicy", "16 PCS PACKET Spicy",
+            "20 PCS PACKET Spicy", "4 pcs chicken Spicy Meal@ 5 AED", "BUCKET MEAL  Spicy", "CHICKEN DAY SPICY",
+            "CHICKEN DAY SPICY  Noon", "Crispy Strips Spicy Meal", "DAILY OFFER  Spicy Meal",
+            "DAILY OFFER  Spicy Meal Noon", "Daily Spicy Meal", "Daily Spicy Meal Noon",
+            "DEAL FOR ONE ( TWIST BOX )  SPIC", "ECONMY MEAL  Spicy", "Golden 4 meal Spicy",
+            "IDEAL MEAL   Spicy", "MEGA MEAL   Spicy", "PKT STRIPS 20 Spicy", "QUICK SPICY",
+            "QUICK Spicy Employees", "QUICK Spicy   Maintenanc", "Ramadan individual Spicy", "SAVING MEAL  Spicy",
+            "SPICIAL FAMILY  Spicy", "SPICY PCS", "STRIPS FAMILY   Spicy", "SUPER MEAL  Spicy",
+            "TWIST BOX   SPICY", "Ultimate S Careem Offers", "Ultimate S Noon Offers", "ULTIMATE  Spicy",
+            "BEEF  BURGER COMBO", "BUFFALO MEAL", "CHICKEN BUEGER COMBO", "DYNAMITE OR COMBO",
+            "DYNAMITE SPY COMBO", "FAJITA COMBO", "FAJITA  Spicy COMBO", "MAXI CHICKEN DOUBLE COMB",
+            "MAXI CHICKEN SINGLE COMB", "SUPER CRUNCHY OR COMBO", "SUPER CRUNCHY SP COMBO", "SUPREM OR COMBO",
+            "SUPREM SP COMBO", "TORNADO OR COMBO", "TORNADO SP COMBO", "TWIN BEEF BURGER",
+            "Twin Chicken Burger", "TWIN SHAWARMA MEAL", "Twin Supreme Meal", "Twin SUPREM MIX",
+            "Twin Suprem Spicy", "Twin Twist  MIX", "Twin Twist  MIX  Noon", "Twin Twist Original",
+            "Twin Twist Original Noon", "Twin Twist Spicy", "Twin Twist Spicy Noon", "TWIST OR COMBO",
+            "TWIST SP COMBO", "TWIST SP COMBO employees", "Volcano Combo Double", "Volcano Combo Single",
+            "GO JUICE", "GO FAMILY KANZA .", "GO KANZA .", "Go Large", "GO Shani.", "GO WATER.",
+            "Upsize Large Fries And Large Pep", "KIDS MEAL CRISPY", "KIDS MEAL NUGGETS", "KIDS MEAL POP CORN",
+            "BEEF  BURGER SANDWICH", "BUFFALO SANDWICH", "CHICKEN BURGER SANDWICH", "DYNAMITE  Origina  SANDW",
+            "DYNAMITE  Origina  SANDWICHES", "FAJITA SANDWICHES", "FAJITA Spicy SANDWICHES",
+            "MAX DOUBLE SANDWICH", "MAX SINGLE SANDWICH", "SHAWARMA Origina SANDWIC", "SHAWARMA Spicy  SANDWICH",
+            "Steak Sandwich", "SUPER CRUNCHY OR SANDWIC", "SUPER CRUNCHY  SP SANDWISHES",
+            "SUPREME Origina  SANDWIC", "SUPREME  Spicy  SANDWIC", "TORNADO Origina   SANDWI",
+            "TORNADO  Spicy SANDWICHE", "TWIST Origina SANDWICHES", "TWIST  Spicy  SANDWICHES",
+            "Volcano Sandwich Double", "Volcano Sandwich Single", "6 PCS NUGGETS", "Big Coleslaw", "BUN",
+            "Cheese", "CHILI CHEESE NUGGETS", "CRISPY LARGE  Original", "CRISPY LARGE  Spicy",
+            "CRISPY RICE", "CRISPY SMALL  Original", "CRISPY SMALL  Spicy", "DYNAMITE SAUCE",
+            "FRENCH FRIES-BOX", "FRENCH FRIES- LARGE", "FRENCH FRIES SMALL", "GARLIC - SMALL",
+            "GRAVEY SAUCE", "HOT CHEDAR CHEESE", "LARGE POP CORN", "Small Coleslaw", "SMALL POP CORN",
+            "SPICED RICE", "Spicy - FRIES", "WHITE RICE", "Crispy Snack Original Me",
+            "Crispy Snack Spicy Meal", "RICE MEAL Original", "RICE MEAL Original employees",
+            "RICE MEAL Spicy", "SNACK BOX Original", "SNACK BOX Spicy", "SNACK SANDWICH Original",
+            "SNACK SANDWICH  Spicy", "7UP M", "7UP S", "DIET PEPSI M", "DIET PEPSI S",
+            "JUCE LAKNOR LARGE", "KANZA", "LARGE 7 UP", "LARGE DEW", "LARGE MIRINDA",
+            "LARGE  PEPSI", "LITER 7UP", "LITER MIRINDA", "LITER Mountain Dew", "LITER PEPSI",
+            "M.WATER 500ML", "MIRINDA M", "MIRINDA S", "Mountain Dew M", "Mountain Dew S",
+            "PEPSI  M", "PEPSI  S", "Shani Can", "SMALL JUICE"
+        ];
+
+        // Generate default recipes with empty ingredients
+        const defaultRecipes = menuItemsList.map((name, index) => ({
+            id: `menu_${index}`,
+            name: name.trim(),
+            ingredients: {}
+        }));
+
+        function loadData(key, def) {
+            return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : def;
+        }
+        function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+        let users = loadData('resto_users', defaultUsers);
+        let recipes = loadData('resto_recipes', defaultRecipes);
+        let sales = loadData('resto_sales', []);
+        let currentUser = null;
+
+        // ==========================================
+        // 2. AUTH & UI
+        // ==========================================
+        document.getElementById('loginForm').onsubmit = function(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const found = users.find(x => x.user === u && x.pass === p);
+            
+            if (found) {
+                currentUser = found;
+                localStorage.setItem('resto_session', JSON.stringify(found));
+                initApp();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        };
+
+        function logout() { localStorage.removeItem('resto_session'); location.reload(); }
+        
+        function checkSession() {
+            const s = localStorage.getItem('resto_session');
+            if(s) {
+                currentUser = JSON.parse(s);
+                if(users.find(x => x.user === currentUser.user)) initApp();
+                else logout();
+            }
+        }
+
+        function initApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('headerBranchName').innerText = currentUser.branch;
+            document.getElementById('headerUserRole').innerText = currentUser.role === 'admin' ? 'Administrator' : 'Branch Staff';
+
+            setupNav();
+            
+            // Permissions
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.classList.toggle('hidden', currentUser.role !== 'admin');
+            });
+
+            // Initial Setup
+            document.getElementById('saleDate').valueAsDate = new Date();
+            document.getElementById('invStartDate').valueAsDate = new Date();
+            document.getElementById('invEndDate').valueAsDate = new Date();
+            
+            renderDashboard();
+            renderInventoryTable(); 
+            renderSalesTable();
+            renderUsersTable();
+            populateMealSelect();
+            renderRecipesTable();
+            renderVarianceTable(); // Render the new specific variance table
+        }
+
+        function setupNav() {
+            const nav = document.getElementById('mainNav');
+            nav.innerHTML = '';
+            const tabs = [
+                { id: 'dashboard', label: 'Dashboard', roles: ['admin', 'branch'] },
+                { id: 'sales', label: 'Sales Entry', roles: ['admin', 'branch'] },
+                { id: 'recipes', label: 'Recipes', roles: ['admin'] },
+                { id: 'inventory', label: 'Inventory & Variance', roles: ['admin', 'branch'] },
+                { id: 'users', label: 'Users', roles: ['admin'] }
+            ];
+
+            tabs.forEach(t => {
+                if(t.roles.includes(currentUser.role)) {
+                    const btn = document.createElement('button');
+                    btn.innerText = t.label;
+                    btn.onclick = () => switchView(t.id, btn);
+                    if(t.id === 'dashboard') btn.classList.add('active');
+                    nav.appendChild(btn);
+                }
+            });
+        }
+
+        function switchView(id, btn) {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.add('hidden'));
+            document.getElementById('view-'+id).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            // Refresh calculations if entering Inventory
+            if(id === 'inventory') {
+                // Optional: Auto sync on enter? No, better manual.
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // ==========================================
+        // 2.5 VARIANCE CALCULATOR (Smart Sync Feature)
+        // ==========================================
+        function renderVarianceTable() {
+            const tbody = document.getElementById('varianceTableBody');
+            tbody.innerHTML = '';
+
+            VARIANCE_CONFIG.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.item}</strong></td>
+                    <td><input type="number" step="1" class="variance-sold-input compact-input numeric" data-idx="${index}" value="0"></td>
+                    <td class="text-right">${row.shortCoef.toFixed(3)}</td>
+                    <td class="text-right">${row.flourCoef.toFixed(3)}</td>
+                    <td class="text-right" id="theo-short-${index}">0</td>
+                    <td class="text-right" id="theo-flour-${index}">0</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Attach listeners
+            document.querySelectorAll('.variance-sold-input').forEach(input => {
+                input.addEventListener('input', calcVariance);
+            });
+        }
+
+        // NEW: Smart Sync Function to populate Sold Quantities from Sales Records
+        function syncSalesToVariance() {
+            const start = document.getElementById('invStartDate').value;
+            const end = document.getElementById('invEndDate').value;
+            if(!start || !end) return alert("Please select Start and End dates first.");
+
+            // Filter sales by date
+            const filteredSales = sales.filter(s => s.date >= start && s.date <= end);
+            
+            if(filteredSales.length === 0) return alert("No sales records found for this period.");
+
+            // Initialize buckets
+            const buckets = {};
+            VARIANCE_CONFIG.forEach(c => buckets[c.item] = 0);
+
+            // Categorize each sale
+            filteredSales.forEach(s => {
+                const recipe = recipes.find(r => r.id === s.mealId);
+                if(!recipe) return;
+
+                const name = recipe.name.toUpperCase();
+                
+                // Try to find matching category
+                for(const config of VARIANCE_CONFIG) {
+                    let match = false;
+                    // Check keywords
+                    for(const kw of config.keywords) {
+                        if(name.includes(kw)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    // Check exclusions
+                    if(match && config.exclude) {
+                        for(const exc of config.exclude) {
+                            if(name.includes(exc)) {
+                                match = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(match) {
+                        buckets[config.item] += s.qty;
+                        break; // Sold item belongs to one category only
+                    }
+                }
+            });
+
+            // Fill inputs
+            VARIANCE_CONFIG.forEach((row, index) => {
+                const input = document.querySelector(`.variance-sold-input[data-idx="${index}"]`);
+                if(input) {
+                    input.value = buckets[row.item];
+                }
+            });
+
+            // Trigger calculation
+            calcVariance();
+            showToast("Sales quantities auto-filled!");
+        }
+
+        function calcVariance() {
+            let totalSold = 0;
+            let totalTheoShort = 0;
+            let totalTheoFlour = 0;
+
+            // Calculate Theoretical from Sold Inputs
+            VARIANCE_CONFIG.forEach((row, index) => {
+                const qty = parseFloat(document.querySelector(`.variance-sold-input[data-idx="${index}"]`).value) || 0;
+                const theoShort = qty * row.shortCoef;
+                const theoFlour = qty * row.flourCoef;
+
+                document.getElementById(`theo-short-${index}`).innerText = theoShort.toFixed(3);
+                document.getElementById(`theo-flour-${index}`).innerText = theoFlour.toFixed(3);
+
+                totalSold += qty;
+                totalTheoShort += theoShort;
+                totalTheoFlour += theoFlour;
+            });
+
+            // Calculate Actual from Inventory Inputs
+            const shortOpen = Number(document.getElementById('var-short-open').value) || 0;
+            const shortBuy = Number(document.getElementById('var-short-buy').value) || 0;
+            const shortClose = Number(document.getElementById('var-short-close').value) || 0;
+            const actualShort = shortOpen + shortBuy - shortClose;
+
+            const flourOpen = Number(document.getElementById('var-flour-open').value) || 0;
+            const flourBuy = Number(document.getElementById('var-flour-buy').value) || 0;
+            const flourClose = Number(document.getElementById('var-flour-close').value) || 0;
+            const actualFlour = flourOpen + flourBuy - flourClose;
+
+            document.getElementById('res-short-actual').innerText = actualShort.toFixed(3);
+            document.getElementById('res-flour-actual').innerText = actualFlour.toFixed(3);
+
+            // Calculate Variance (Over / Short)
+            // Variance = Actual - Theoretical
+            const varShort = actualShort - totalTheoShort;
+            const varFlour = actualFlour - totalTheoFlour;
+
+            const elShort = document.getElementById('res-short-var');
+            elShort.innerText = varShort.toFixed(3);
+            elShort.className = varShort < 0 ? "text-red" : "text-green";
+
+            const elFlour = document.getElementById('res-flour-var');
+            elFlour.innerText = varFlour.toFixed(3);
+            elFlour.className = varFlour < 0 ? "text-red" : "text-green";
+        }
+
+        // ==========================================
+        // 3. RECIPES (Dynamic Ingredients)
+        // ==========================================
+        function addIngredientRow(currentValues = {}) {
+            const container = document.getElementById('recipeIngredientsList');
+            const div = document.createElement('div');
+            div.className = 'ingredient-row';
+            
+            let opts = INGREDIENTS.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+            
+            div.innerHTML = `
+                <select class="ing-select">${opts}</select>
+                <input type="number" step="0.01" class="ing-qty" placeholder="Qty" value="${currentValues.qty || ''}">
+                <button type="button" class="danger sm" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(div);
+            if(currentValues.id) {
+                div.querySelector('.ing-select').value = currentValues.id;
+            }
+        }
+
+        document.getElementById('recipeForm').onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('recName').value;
+            const id = document.getElementById('recId').value;
+            
+            const ingredients = {};
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                const ingId = row.querySelector('.ing-select').value;
+                const qty = parseFloat(row.querySelector('.ing-qty').value);
+                if(qty > 0) ingredients[ingId] = qty;
+            });
+
+            if(Object.keys(ingredients).length === 0 && !id) return alert("Add at least one ingredient");
+
+            const recipeData = { id: id || 'rec_' + Date.now(), name: name, ingredients: ingredients };
+            
+            if(id) {
+                const idx = recipes.findIndex(r => r.id === id);
+                if(idx !== -1) recipes[idx] = recipeData;
+            } else {
+                recipes.push(recipeData);
+            }
+
+            saveData('resto_recipes', recipes);
+            renderRecipesTable();
+            populateMealSelect();
+            e.target.reset();
+            document.getElementById('recId').value = '';
+            document.getElementById('recipeIngredientsList').innerHTML = '';
+            showToast('Recipe Saved');
+        };
+
+        function editRecipe(index) {
+            const r = recipes[index];
+            document.getElementById('recName').value = r.name;
+            document.getElementById('recId').value = r.id;
+            const list = document.getElementById('recipeIngredientsList');
+            list.innerHTML = '';
+            for (const [ingId, qty] of Object.entries(r.ingredients)) {
+                addIngredientRow({id: ingId, qty: qty});
+            }
+            addIngredientRow();
+            window.scrollTo(0,0);
+        }
+
+        function renderRecipesTable() {
+            const tbody = document.getElementById('recipeTableBody');
+            const search = document.getElementById('recipeSearch').value.toLowerCase();
+            tbody.innerHTML = '';
+            recipes.forEach((r, i) => {
+                if(search && !r.name.toLowerCase().includes(search)) return;
+                const ingCount = Object.keys(r.ingredients).length;
+                const ingText = ingCount === 0 ? '<span class="text-red">Empty (Edit Req.)</span>' : `<span class="text-green">${ingCount} Items</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.name}</td>
+                    <td>${ingText}</td>
+                    <td class="admin-only ${currentUser.role!=='admin'?'hidden':''}" style="white-space:nowrap;">
+                        <button class="secondary sm" onclick="editRecipe(${i})">Edit</button>
+                        <button class="danger sm" onclick="deleteRecipe(${i})">Del</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function deleteRecipe(idx) {
+            if(confirm('Delete Recipe?')) { recipes.splice(idx, 1); saveData('resto_recipes', recipes); renderRecipesTable(); populateMealSelect(); }
+        }
+
+        // ==========================================
+        // 4. SALES
+        // ==========================================
+        function populateMealSelect() {
+            const s = document.getElementById('saleMeal');
+            s.innerHTML = '<option value="">Select Meal...</option>';
+            // Sort recipes alphabetically for easier finding
+            const sortedRecipes = [...recipes].sort((a,b) => a.name.localeCompare(b.name));
+            sortedRecipes.forEach(r => s.innerHTML += `<option value="${r.id}">${r.name}</option>`);
+        }
+
+        document.getElementById('salesForm').onsubmit = function(e) {
+            e.preventDefault();
+            const rec = {
+                id: Date.now(),
+                date: document.getElementById('saleDate').value,
+                branch: currentUser.branch,
+                mealId: document.getElementById('saleMeal').value,
+                qty: Number(document.getElementById('saleQty').value)
+            };
+            if(!rec.mealId) return;
+            
+            sales.push(rec);
+            saveData('resto_sales', sales);
+            renderSalesTable();
+            document.getElementById('saleQty').value = '';
+            document.getElementById('saleMeal').value = '';
+            showToast('Sale Recorded');
+        };
+
+        function renderSalesTable() {
+            const tbody = document.getElementById('salesTableBody');
+            const search = document.getElementById('salesSearch').value.toLowerCase();
+            tbody.innerHTML = '';
+            
+            const filtered = sales.filter(s => {
+                const branchOk = currentUser.role==='admin' || s.branch===currentUser.branch;
+                const textOk = s.date.includes(search) || recipes.find(x=>x.id===s.mealId)?.name.toLowerCase().includes(search);
+                return branchOk && textOk;
+            }).sort((a,b) => new Date(b.date)-new Date(a.date));
+
+            filtered.forEach(s => {
+                const rName = recipes.find(x=>x.id===s.mealId)?.name || 'Unknown Item';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.date}</td>
+                    <td>${rName}</td>
+                    <td class="text-right">${s.qty}</td>
+                    <td class="text-right"><button class="danger sm" onclick="deleteSale(${s.id})">X</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function deleteSale(id) {
+            if(confirm('Delete record?')) { sales = sales.filter(s => s.id !== id); saveData('resto_sales', sales); renderSalesTable(); }
+        }
+
+        // ==========================================
+        // 5. INVENTORY & ANALYSIS (General)
+        // ==========================================
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            INGREDIENTS.forEach(ing => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${ing.name}</td>
+                    <td style="text-align:center;">${ing.unit}</td>
+                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="open"></td>
+                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="buy"></td>
+                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="close"></td>
+                    <td id="res-${ing.id}" style="font-weight:bold; text-align:center;">0</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.querySelectorAll('.inv-input').forEach(inp => {
+                inp.addEventListener('input', calcActuals);
+            });
+        }
+
+        function calcActuals() {
+            INGREDIENTS.forEach(ing => {
+                const open = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="open"]`).value) || 0;
+                const buy = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="buy"]`).value) || 0;
+                const close = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="close"]`).value) || 0;
+                const actual = open + buy - close;
+                document.getElementById(`res-${ing.id}`).innerText = actual.toFixed(2);
+            });
+        }
+
+        function runAnalysis() {
+            const start = document.getElementById('invStartDate').value;
+            const end = document.getElementById('invEndDate').value;
+            if(!start || !end) return alert('Please select date range');
+
+            const theoretical = {};
+            INGREDIENTS.forEach(i => theoretical[i.id] = 0);
+
+            const targetBranch = currentUser.role === 'admin' ? 'ALL' : currentUser.branch;
+            
+            sales.forEach(s => {
+                if(s.date >= start && s.date <= end && (targetBranch==='ALL' || s.branch===targetBranch)) {
+                    const r = recipes.find(x => x.id === s.mealId);
+                    if(r) {
+                        for(const [ingId, qtyPerMeal] of Object.entries(r.ingredients)) {
+                            if(theoretical[ingId] !== undefined) {
+                                theoretical[ingId] += qtyPerMeal * s.qty;
+                            }
+                        }
+                    }
+                }
+            });
+
+            const tbody = document.getElementById('analysisTableBody');
+            tbody.innerHTML = '';
+
+            INGREDIENTS.forEach(ing => {
+                const theo = theoretical[ing.id];
+                const act = Number(document.getElementById(`res-${ing.id}`).innerText) || 0;
+                
+                if(theo > 0 || act > 0) {
+                    const variance = act - theo;
+                    const percent = theo > 0 ? ((variance / theo) * 100).toFixed(1) : 0;
+                    const isWaste = variance > 0;
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${ing.name}</td>
+                        <td class="text-right">${theo.toFixed(2)}</td>
+                        <td class="text-right">${act.toFixed(2)}</td>
+                        <td class="text-right ${isWaste?'text-red':'text-green'}" style="font-weight:bold;">${variance>0?'+':''}${variance.toFixed(2)}</td>
+                        <td class="text-right ${isWaste?'text-red':'text-green'}">${percent}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if(tbody.innerHTML === '') {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No data for this period</td></tr>';
+            }
+
+            document.getElementById('analysisResults').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 6. USERS & DASHBOARD
+        // ==========================================
+        function renderUsersTable() {
+            const tb = document.getElementById('usersTableBody');
+            tb.innerHTML = '';
+            users.forEach((u, i) => {
+                if(u.user === 'admin') return;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.user}</td>
+                    <td>${u.role}</td>
+                    <td>${u.branch||'-'}</td>
+                    <td class="admin-only ${currentUser.role!=='admin'?'hidden':''}">
+                        <button class="danger sm" onclick="delUser(${i})">X</button>
+                    </td>
+                `;
+                tb.appendChild(tr);
+            });
+        }
+        document.getElementById('userForm').onsubmit = function(e) {
+            e.preventDefault();
+            const u = document.getElementById('newUser').value;
+            if(users.find(x=>x.user===u)) return alert('User exists');
+            users.push({
+                user: u, pass: document.getElementById('newPass').value,
+                role: document.getElementById('newRole').value,
+                branch: document.getElementById('newBranchName').value
+            });
+            saveData('resto_users', users);
+            renderUsersTable();
+            e.target.reset();
+        };
+        function delUser(i) { if(confirm('Delete User?')) { users.splice(i,1); saveData('resto_users', users); renderUsersTable(); } }
+
+        function renderDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const branch = currentUser.role==='admin'?'ALL':currentUser.branch;
+            const todaySales = sales.filter(s => s.date===today && (branch==='ALL'||s.branch===branch));
+            const meals = todaySales.reduce((a,c)=>a+c.qty,0);
+            document.getElementById('dashTodaySales').innerText = todaySales.length;
+            document.getElementById('dashTodayMeals').innerText = meals;
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>
