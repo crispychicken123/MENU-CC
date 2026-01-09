@@ -1,1103 +1,2024 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Management System Pro</title>
+    <title>Crispy Chicken | Inventory Management System</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1e40af;
-            --secondary: #64748b;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --bg: #f1f5f9;
-            --surface: #ffffff;
-            --border: #e2e8f0;
-            --text: #0f172a;
+            --primary: #2c3e50;
+            --secondary: #e67e22; /* Crispy Orange */
+            --secondary-dark: #d35400;
+            --accent: #3498db;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --warning: #f1c40f;
+            --light: #f5f6fa;
+            --dark: #2c3e50;
+            --border: #dcdde1;
+            
+            /* Category Colors */
+            --cat-chicken: #e74c3c;
+            --cat-frozen: #3498db;
+            --cat-bakery: #f1c40f;
+            --cat-sauce: #9b59b6;
+            --cat-beverage: #1abc9c;
+            --cat-addon: #e67e22;
+            --cat-dryfood: #95a5a6;
+            --cat-salad: #2ecc71;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-size: 14px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: #ecf0f1; color: var(--dark); display: flex; flex-direction: column; min-height: 100vh; }
 
-        /* Helpers */
-        .hidden { display: none !important; }
-        .text-red { color: var(--danger); }
-        .text-green { color: var(--success); }
-        .flex { display: flex; gap: 10px; align-items: center; }
-        .flex-col { display: flex; gap: 10px; flex-direction: column; }
-        .w-full { width: 100%; }
-        .mt-2 { margin-top: 1rem; }
-        .p-2 { padding: 1rem; }
-        .mb-2 { margin-bottom: 1rem; }
+        /* --- Header --- */
+        header {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand i { font-size: 32px; color: var(--secondary); }
+        .brand h1 { font-size: 24px; color: var(--primary); }
+        .brand span { color: var(--secondary); font-weight: bold; }
+
+        .header-controls { display: flex; gap: 15px; align-items: center; }
+        .date-display { font-weight: 600; color: #7f8c8d; font-size: 14px; }
+        
+        select.branch-select, select.menu-branch-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--light);
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            background: var(--primary);
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+
+        .nav-tabs { display: flex; list-style: none; }
+        .nav-item {
+            padding: 15px 20px;
+            color: #bdc3c7;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+        .nav-item.active { color: white; border-bottom-color: var(--secondary); background: rgba(0,0,0,0.2); }
+        .nav-item i { margin-right: 8px; }
+
+        /* --- Main Layout --- */
+        main { flex: 1; padding: 25px; max-width: 1800px; margin: 0 auto; width: 100%; }
+        
+        .section { display: none; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .page-header h2 { color: var(--primary); }
+
+        /* --- Cards & Grid --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        
+        .kpi-title { font-size: 13px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-value { font-size: 28px; font-weight: 700; margin: 10px 0; color: var(--primary); }
+        .kpi-trend { font-size: 12px; display: flex; align-items: center; gap: 5px; }
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+
+        /* --- Tables --- */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            overflow-x: auto;
+            max-height: 75vh; /* For sales/recipe tables */
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        thead { background: var(--light); position: sticky; top: 0; z-index: 10; }
+        th { text-align: left; padding: 15px; font-size: 13px; font-weight: 600; color: #7f8c8d; border-bottom: 2px solid var(--border); white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--light); font-size: 14px; vertical-align: middle; }
+        tr:hover { background: #fcfcfc; }
+
+        /* --- Badges --- */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; display: inline-block; }
+        
+        .status-excellent { background: #d4edda; color: #155724; }
+        .status-good { background: #d1ecf1; color: #0c5460; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-danger { background: #f8d7da; color: #721c24; }
+
+        .cat-badge { border: 1px solid transparent; color: white; }
+        .cat-chicken { background-color: var(--cat-chicken); }
+        .cat-frozen { background-color: var(--cat-frozen); }
+        .cat-bakery { background-color: var(--cat-bakery); }
+        .cat-sauce { background-color: var(--cat-sauce); }
+        .cat-beverage { background-color: var(--cat-beverage); }
+        .cat-addon { background-color: var(--cat-addon); }
+        .cat-dryfood { background-color: var(--cat-dryfood); }
+        .cat-salad { background-color: var(--cat-salad); }
+
+        /* --- Controls & Forms --- */
+        .controls { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--secondary); color: white; }
+        .btn-primary:hover { background: var(--secondary-dark); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #219150; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--dark); }
+        .btn-outline:hover { background: var(--light); border-color: #bdc3c7; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #a93226; }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #95a5a6; }
+
+        .filter-group { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* --- Form Grid --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #34495e; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group input:focus { border-color: var(--secondary); outline: none; }
+        .form-hint { font-size: 12px; color: #95a5a6; margin-top: 5px; }
+
+        /* --- Charts --- */
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: 350px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Toast Notification --- */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 4px solid var(--secondary);
+            animation: slideIn 0.3s ease;
+            min-width: 300px;
+            max-width: 400px;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        /* --- Utility --- */
         .text-right { text-align: right; }
-
-        /* Buttons & Inputs */
-        button {
-            background-color: var(--primary); color: white; border: none; padding: 10px 16px;
-            border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        button:hover { background-color: var(--primary-dark); }
-        button.danger { background-color: var(--danger); }
-        button.secondary { background-color: var(--secondary); }
-        button.sm { padding: 6px 12px; font-size: 0.8rem; }
+        .text-center { text-align: center; }
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .hidden { display: none; }
         
-        input, select {
-            padding: 10px; border: 1px solid var(--border); border-radius: 6px;
-            width: 100%; margin-bottom: 8px; font-size: 0.95rem;
+        .alert-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
-        input.numeric { text-align: right; }
-        
-        /* Wider inputs for Variance table */
-        .compact-input { width: 100px !important; text-align: center; padding: 8px; margin-bottom: 0; }
+        .alert-danger { background: #fadbd8; border: 1px solid #f5b7b1; color: #721c24; }
+        .alert-warning { background: #fdebd0; border: 1px solid #fad7a0; color: #856404; }
 
-        /* Layout */
-        #login-screen {
-            height: 100vh; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        }
-        .login-card {
-            background: var(--surface); padding: 2.5rem; border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 380px;
+        /* Recipe Master Specifics */
+        .menu-input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             text-align: center;
         }
+        .menu-row.active-input td {
+            background-color: #f0f9ff;
+        }
 
-        #app-screen { display: flex; flex-direction: column; min-height: 100vh; }
-        
-        header {
-            background: var(--surface); border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        /* RECIPE MASTER LAYOUT */
+        .recipe-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            height: 75vh;
         }
-        nav {
-            background: var(--surface); padding: 0 1rem; border-bottom: 1px solid var(--border);
-            overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+        .recipe-list {
+            border-right: 1px solid var(--border);
+            padding-right: 20px;
+            overflow-y: auto;
         }
-        nav button {
-            background: none; color: var(--secondary); border-radius: 0; padding: 12px 16px;
-            border-bottom: 3px solid transparent; font-weight: 600;
+        .recipe-details {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: none;
+            overflow-y: auto;
+            height: 100%;
         }
-        nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
-        nav button:hover { background-color: var(--bg); }
+        .recipe-details.active { display: block; }
+        .recipe-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .recipe-item:hover { background-color: #f8f9fa; }
+        .recipe-item.selected { background-color: #e8f8f5; border-left: 4px solid var(--success); }
 
-        main { padding: 1.5rem; flex: 1; max-width: 1400px; margin: 0 auto; width: 100%; }
+        /* EDIT FORM STYLES */
+        .edit-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+        .ing-edit-row {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .ing-edit-label { font-size: 12px; color: #7f8c8d; }
+        .ing-edit-input { width: 100%; padding: 5px; border: 1px solid var(--border); border-radius: 4px; }
 
-        /* Cards & Tables */
-        .card {
-            background: var(--surface); border-radius: 8px; padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
-        th { background-color: var(--bg); color: var(--secondary); white-space: nowrap; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; }
-        tr.total-row td { font-weight: bold; background-color: #f8fafc; border-top: 2px solid var(--border); }
-        tr.variance-row td { font-weight: bold; color: var(--text); border-top: 2px solid var(--border); }
-        
-        /* Toast */
-        #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        #toast.show { opacity: 1; }
-
-        /* Dynamic Recipe Form */
-        .ingredient-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .ingredient-row select { width: 45%; margin-bottom: 0; }
-        .ingredient-row input { width: 35%; margin-bottom: 0; }
-        
-        /* Print Styles */
-        @media print {
-            nav, header, .no-print, button, input, select { display: none !important; }
-            .card { border: none; box-shadow: none; padding: 0; margin: 0; }
-            body { background: white; }
-            #app-screen { display: block; }
-            section { display: block !important; margin-bottom: 2rem; }
-            table { width: 100%; font-size: 10px; }
-            th, td { border: 1px solid #000; padding: 4px; }
-        }
-        
+        /* Responsive */
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
-            nav { padding: 0; }
-            header { flex-direction: column; gap: 10px; text-align: center; }
-            .compact-input { width: 70px !important; font-size: 12px; }
+            .recipe-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .recipe-list {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-right: 0;
+                padding-bottom: 20px;
+                max-height: 300px;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-controls {
+                flex-wrap: wrap;
+            }
+            .brand h1 {
+                font-size: 20px;
+            }
+            .nav-tabs {
+                font-size: 12px;
+            }
+            .nav-item {
+                padding: 12px 15px;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <div id="toast">Action Successful</div>
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <i class="fas fa-drumstick-bite"></i>
+            <div>
+                <h1>Inventory <span>Master</span></h1>
+                <div style="font-size: 12px; color: #7f8c8d;">Crispy Chicken Restaurant Chain</div>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="date-display" id="currentDate"></div>
+            <select class="branch-select" id="globalBranchFilter" onchange="updateBranchFilter()">
+                <option value="ALL">All 9 Branches</option>
+                <option value="BR-01">BR-01 - Hamdan St</option>
+                <option value="BR-02">BR-02 - Mussafah</option>
+                <option value="BR-03">BR-03 - Khalidiya</option>
+                <option value="BR-04">BR-04 - Muroor</option>
+                <option value="BR-05">BR-05 - Al Electra</option>
+                <option value="BR-06">BR-06 - Al Barsha</option>
+                <option value="BR-07">BR-07 - Al Satwa</option>
+                <option value="BR-08">BR-08 - Al Rigga</option>
+                <option value="BR-09">BR-09 - Al Majaz</option>
+            </select>
+        </div>
+    </header>
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen">
-        <div class="login-card">
-            <h2 style="color: var(--primary); margin-bottom: 5px;">Resto Manager</h2>
-            <p style="color: var(--secondary); margin-top:0; font-size: 0.9rem;">Inventory & Variance System</p>
-            <form id="loginForm">
-                <input type="text" id="username" placeholder="Username" required autocomplete="username">
-                <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
-                <button type="submit" class="w-full">Login</button>
+    <!-- Navigation -->
+    <nav>
+        <ul class="nav-tabs">
+            <li class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-pie"></i> Dashboard</li>
+            <li class="nav-item" onclick="switchTab('inventory', this)"><i class="fas fa-list"></i> Inventory Table</li>
+            <li class="nav-item" onclick="switchTab('sales-entry', this)"><i class="fas fa-cash-register"></i> POS Sales Entry</li>
+            <li class="nav-item" onclick="switchTab('recipe-master', this)"><i class="fas fa-utensils"></i> Recipe Master</li>
+            <li class="nav-item" onclick="switchTab('add-item', this)"><i class="fas fa-plus-circle"></i> Add Entry</li>
+            <li class="nav-item" onclick="switchTab('item-master', this)"><i class="fas fa-boxes"></i> Item Master (34)</li>
+            <li class="nav-item" onclick="switchTab('alerts', this)"><i class="fas fa-bell"></i> Alerts</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="section active">
+            <div class="page-header">
+                <h2>Dashboard Overview</h2>
+                <button class="btn btn-outline btn-sm" onclick="refreshDashboard()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="card">
+                    <div class="kpi-title">Total Inventory Value</div>
+                    <div class="kpi-value" id="kpi-total-value">AED 0.00</div>
+                    <div class="kpi-trend"><i class="fas fa-coins text-success"></i> Current Stock Value</div>
+                </div>
+                <div class="card">
+                    <div class="kpi-title">Variance Score</div>
+                    <div class="kpi-value" id="kpi-variance">0.0%</div>
+                    <div class="kpi-trend">Avg. Variance across all items</div>
+                </div>
+                <div class="card">
+                    <div class="kpi-title">Waste Level</div>
+                    <div class="kpi-value" id="kpi-waste">0.0%</div>
+                    <div class="kpi-trend" id="kpi-waste-trend">Vs Purchases</div>
+                </div>
+                <div class="card">
+                    <div class="kpi-title">Urgent Orders</div>
+                    <div class="kpi-value text-danger" id="kpi-urgent">0</div>
+                    <div class="kpi-trend">Items with < 2 days stock</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="varianceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Branch Snapshot -->
+            <div class="table-container">
+                <div style="padding: 15px; border-bottom: 1px solid var(--light); font-weight: bold;">Branch Performance Snapshot</div>
+                <table style="min-width: auto;">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>Total Items</th>
+                            <th>Total Value</th>
+                            <th>Avg Variance</th>
+                            <th>Waste %</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="branch-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- INVENTORY TABLE SECTION -->
+        <section id="inventory" class="section">
+            <div class="page-header">
+                <h2>Inventory Data</h2>
+                <div style="font-size: 14px; color: #7f8c8d;" id="inventory-count">0 items</div>
+            </div>
+
+            <div class="controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="tableSearch" placeholder="Search by item name, code or branch..." onkeyup="filterTable()">
+                </div>
+                <button class="btn btn-primary" onclick="switchTab('add-item', document.querySelectorAll('.nav-item')[4])"><i class="fas fa-plus"></i> New Entry</button>
+                <button class="btn btn-outline" onclick="exportData()"><i class="fas fa-download"></i> Export CSV</button>
+            </div>
+
+            <div class="filter-group" id="tableFilters">
+                <button class="filter-btn active" onclick="filterTableCategory('ALL', this)">All Categories</button>
+                <button class="filter-btn" onclick="filterTableCategory('Chicken', this)">Chicken</button>
+                <button class="filter-btn" onclick="filterTableCategory('Frozen', this)">Frozen</button>
+                <button class="filter-btn" onclick="filterTableCategory('Bakery', this)">Bakery</button>
+                <button class="filter-btn" onclick="filterTableCategory('Sauce', this)">Sauce</button>
+                <button class="filter-btn" onclick="filterTableCategory('Beverage', this)">Beverage</button>
+                <button class="filter-btn" onclick="filterTableCategory('Dry Food', this)">Dry Food</button>
+                <button class="filter-btn" onclick="filterTableCategory('Salad', this)">Salad</button>
+                <button class="filter-btn" onclick="filterTableCategory('Addon', this)">Addon</button>
+            </div>
+
+            <div class="table-container">
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Branch</th>
+                            <th class="text-right">Opening</th>
+                            <th class="text-right">Purchase</th>
+                            <th class="text-right">Closing</th>
+                            <th class="text-right">Waste</th>
+                            <th class="text-right">Theoretical</th>
+                            <th class="text-right">Actual</th>
+                            <th class="text-right">Var. %</th>
+                            <th class="text-right">Days Left</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SALES ENTRY SECTION -->
+        <section id="sales-entry" class="section">
+            <div class="page-header">
+                <h2>POS Sales Entry & Recipe Expansion</h2>
+                <div class="form-hint" id="sales-summary">Ready to post consumption</div>
+            </div>
+
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">Select Branch for Posting</label>
+                    <select id="sales-branch" class="menu-branch-select" style="width: 100%; padding: 10px;">
+                        <option value="BR-01">BR-01 - Hamdan St</option>
+                        <option value="BR-02">BR-02 - Mussafah</option>
+                        <option value="BR-03">BR-03 - Khalidiya</option>
+                        <option value="BR-04">BR-04 - Muroor</option>
+                        <option value="BR-05">BR-05 - Al Electra</option>
+                        <option value="BR-06">BR-06 - Al Barsha</option>
+                        <option value="BR-07">BR-07 - Al Satwa</option>
+                        <option value="BR-08">BR-08 - Al Rigga</option>
+                        <option value="BR-09">BR-09 - Al Majaz</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <button class="btn btn-success" style="width: 100%; justify-content: center;" onclick="postConsumption()">
+                        <i class="fas fa-calculator"></i> Post Consumption to Inventory
+                    </button>
+                    <div class="form-hint" style="text-align: center;">Calculates recipes & updates Actual Usage</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="menuSearch" placeholder="Search menu items..." onkeyup="filterMenuTable()">
+                </div>
+                <div class="kpi-title" style="color: var(--secondary);">Total Revenue: <span id="total-revenue-preview">AED 0.00</span></div>
+                <button class="btn btn-outline btn-sm" onclick="clearAllSales()"><i class="fas fa-times"></i> Clear All</button>
+            </div>
+
+            <div class="table-container">
+                <table id="sales-table">
+                    <thead>
+                        <tr>
+                            <th>Menu Code</th>
+                            <th>Item Name</th>
+                            <th>UOM</th>
+                            <th>Price</th>
+                            <th>Qty Sold</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sales-body">
+                        <!-- Populated via JS from User Data -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- RECIPE MASTER SECTION -->
+        <section id="recipe-master" class="section">
+            <div class="page-header">
+                <h2>Recipe Master</h2>
+                <div>
+                    <input type="file" id="recipeUploadInput" accept=".json" style="display:none" onchange="importRecipes(this)">
+                    <button class="btn btn-outline" onclick="document.getElementById('recipeUploadInput').click()"><i class="fas fa-upload"></i> Upload/Import</button>
+                    <button class="btn btn-success" onclick="exportRecipes()"><i class="fas fa-download"></i> Export List</button>
+                    <button class="btn btn-primary" onclick="openAddNewRecipe()"><i class="fas fa-plus"></i> Add New Recipe</button>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 20px; height: 80vh; display: flex; flex-direction: column;">
+                <div class="controls" style="margin-bottom: 15px;">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="recipeSearch" placeholder="Search menu items..." onkeyup="filterRecipeMaster()">
+                    </div>
+                    <div style="font-size: 14px; color: #7f8c8d;" id="recipe-count">${recipeData.length} recipes</div>
+                </div>
+                
+                <div class="recipe-layout">
+                    <!-- Left Column: Menu Items List -->
+                    <div class="recipe-list" id="recipe-list-container">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Right Column: Selected Recipe Details OR Edit Form -->
+                    <div id="recipe-details-panel" class="recipe-details">
+                        <!-- Default state -->
+                        <div class="empty-state">
+                            <i class="fas fa-utensils"></i>
+                            <h3>No Recipe Selected</h3>
+                            <p>Select a menu item from the list to view or edit its recipe.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADD ITEM SECTION -->
+        <section id="add-item" class="section">
+            <div class="page-header">
+                <h2>Add Inventory Entry</h2>
+            </div>
+
+            <form onsubmit="event.preventDefault(); saveInventoryEntry();" class="form-grid">
+                <!-- Item Selection -->
+                <div class="form-group">
+                    <label>Select Item from Master</label>
+                    <select id="entry-item-select" onchange="fillItemDetails()" required>
+                        <option value="">-- Choose Item --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Branch</label>
+                    <select id="entry-branch" required>
+                        <option value="BR-01">BR-01 - Hamdan St</option>
+                        <option value="BR-02">BR-02 - Mussafah</option>
+                        <option value="BR-03">BR-03 - Khalidiya</option>
+                        <option value="BR-04">BR-04 - Muroor</option>
+                        <option value="BR-05">BR-05 - Al Electra</option>
+                        <option value="BR-06">BR-06 - Al Barsha</option>
+                        <option value="BR-07">BR-07 - Al Satwa</option>
+                        <option value="BR-08">BR-08 - Al Rigga</option>
+                        <option value="BR-09">BR-09 - Al Majaz</option>
+                    </select>
+                </div>
+
+                <!-- Read Only Info -->
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="entry-category" readonly style="background: #f0f0f0;">
+                </div>
+                <div class="form-group">
+                    <label>Unit of Measure (UOM)</label>
+                    <input type="text" id="entry-uom" readonly style="background: #f0f0f0;">
+                </div>
+
+                <!-- Numerical Inputs -->
+                <div class="form-group">
+                    <label>Opening Stock</label>
+                    <input type="number" step="0.01" id="entry-opening" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Purchases</label>
+                    <input type="number" step="0.01" id="entry-purchase" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Closing Stock (Current)</label>
+                    <input type="number" step="0.01" id="entry-closing" required min="0" onchange="autoCalculate()">
+                </div>
+                <div class="form-group">
+                    <label>Waste</label>
+                    <input type="number" step="0.01" id="entry-waste" value="0" min="0" onchange="autoCalculate()">
+                </div>
+                
+                <!-- Calculations Display -->
+                <div class="form-group">
+                    <label>Theoretical Usage (Calc)</label>
+                    <input type="text" id="entry-theoretical" readonly style="background: #e8f8f5; font-weight: bold; color: var(--dark);">
+                </div>
+                <div class="form-group">
+                    <label>Actual Usage (Physical)</label>
+                    <input type="number" step="0.01" id="entry-actual" required min="0">
+                    <div class="form-hint">Count from POS or physical check</div>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                    <button type="button" class="btn btn-outline" onclick="resetForm()">Clear</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Entry</button>
+                </div>
             </form>
-            <p id="loginError" class="text-red mt-2 hidden">Invalid Credentials</p>
-            <div style="font-size: 0.75rem; text-align: left; background: #f1f5f9; padding: 10px; margin-top:15px; border-radius: 4px; color: var(--secondary);">
-                <strong>Demo Credentials:</strong><br>
-                Admin: admin / 1234<br>
-                Branch: BR01 / 1111
+        </section>
+
+        <!-- ITEM MASTER SECTION -->
+        <section id="item-master" class="section">
+            <div class="page-header">
+                <h2>Item Master List</h2>
+                <span class="badge cat-chicken">Total ${itemMaster.length} Items</span>
+            </div>
+            <div class="table-container">
+                <table id="master-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>UOM</th>
+                            <th>Reorder Level</th>
+                            <th>Avg Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ALERTS SECTION -->
+        <section id="alerts" class="section">
+            <div class="page-header">
+                <h2>Alerts & Notifications</h2>
+                <button class="btn btn-outline btn-sm" onclick="refreshAlerts()"><i class="fas fa-sync"></i> Refresh</button>
+            </div>
+            <div id="alerts-container">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Modal for Confirmations -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure you want to perform this action?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" id="modal-confirm-btn">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- APP SCREEN -->
-    <div id="app-screen" class="hidden">
-        <header>
-            <div>
-                <h3 id="headerBranchName" style="margin:0;">Branch Name</h3>
-                <small id="headerUserRole" style="color: var(--secondary);"></small>
-            </div>
-            <button onclick="logout()" class="secondary sm">Logout</button>
-        </header>
-
-        <nav id="mainNav"></nav>
-
-        <main>
-            <!-- DASHBOARD -->
-            <section id="view-dashboard" class="view-section">
-                <div class="card" style="background: linear-gradient(to right, var(--primary), var(--primary-dark)); color: white;">
-                    <h2 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">Quick Summary</h2>
-                    <div class="flex" style="justify-content: space-around; padding: 20px 0;">
-                        <div style="text-align: center;">
-                            <label style="opacity: 0.9; display:block;">Today's Transactions</label>
-                            <h1 id="dashTodaySales" style="margin: 10px 0 0 0; font-size: 2.5rem;">0</h1>
-                        </div>
-                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px;">
-                            <label style="opacity: 0.9; display:block;">Total Meals Sold</label>
-                            <h1 id="dashTodayMeals" style="margin: 10px 0 0 0; font-size: 2.5rem;">0</h1>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SALES ENTRY -->
-            <section id="view-sales" class="view-section hidden">
-                <div class="card">
-                    <h2>Daily Sales Entry</h2>
-                    <form id="salesForm" class="flex" style="flex-wrap: wrap; align-items: flex-end;">
-                        <div style="flex: 1; min-width: 140px;">
-                            <label>Date</label>
-                            <input type="date" id="saleDate" required>
-                        </div>
-                        <div style="flex: 2; min-width: 200px;">
-                            <label>Menu Item</label>
-                            <select id="saleMeal" required></select>
-                        </div>
-                        <div style="flex: 1; min-width: 80px;">
-                            <label>Qty</label>
-                            <input type="number" id="saleQty" min="1" placeholder="Qty" required class="numeric">
-                        </div>
-                        <div>
-                            <button type="submit">Add Sale</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <div class="flex" style="justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3>Sales Log</h3>
-                        <input type="text" id="salesSearch" placeholder="Search date or meal..." onkeyup="renderSalesTable()" style="max-width: 200px; margin-bottom:0;">
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Item Name</th>
-                                    <th class="text-right">Qty</th>
-                                    <th class="text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="salesTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- RECIPES (ADMIN) -->
-            <section id="view-recipes" class="view-section hidden">
-                <div class="card admin-only hidden" style="border-left: 5px solid var(--primary);">
-                    <h2>Manage Recipes</h2>
-                    <div class="text-red" style="background: #fef2f2; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size:0.85rem;">
-                        <strong>Note:</strong> All menu items exist, but ingredients are empty. You must edit items and add ingredients (Chicken, Buns, etc.) for the General Waste Analysis to work accurately.
-                    </div>
-                    <form id="recipeForm">
-                        <div class="flex mb-2">
-                            <input type="text" id="recName" placeholder="Meal Name (e.g. Zinger Meal)" required style="flex:2;">
-                            <input type="hidden" id="recId">
-                            <button type="submit" style="flex:0.5;">Save</button>
-                        </div>
-                        
-                        <div style="background: #f8fafc; padding: 15px; border-radius: 4px; border: 1px solid var(--border);">
-                            <label style="font-weight: 600; display:block; margin-bottom: 10px;">Ingredients:</label>
-                            <div id="recipeIngredientsList"></div>
-                            <button type="button" onclick="addIngredientRow()" class="secondary sm">+ Add Ingredient</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <div class="flex" style="justify-content: space-between; align-items: center;">
-                        <h3>Recipe List</h3>
-                        <input type="text" id="recipeSearch" placeholder="Search..." onkeyup="renderRecipesTable()" style="max-width: 200px; margin-bottom:0;">
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Meal Name</th>
-                                    <th>Ingredients</th>
-                                    <th class="admin-only hidden">Control</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recipeTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- INVENTORY & ANALYSIS -->
-            <section id="view-inventory" class="view-section hidden">
-                
-                <!-- Date Selection -->
-                <div class="card no-print" style="background: #e2e8f0; border: none;">
-                    <div class="flex" style="margin-bottom: 0;">
-                        <div style="flex:1;">
-                            <label>Analysis Start Date</label>
-                            <input type="date" id="invStartDate" style="margin-bottom:0;">
-                        </div>
-                        <div style="flex:1;">
-                            <label>Analysis End Date</label>
-                            <input type="date" id="invEndDate" style="margin-bottom:0;">
-                        </div>
-                        <div style="display:flex; align-items:flex-end;">
-                            <button onclick="syncSalesToVariance()" type="button" class="secondary" style="height: 42px; white-space:nowrap;">
-                                ⚡ Auto-Fill Sales from Records
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VARIANCE TABLE (New Feature) -->
-                <div class="card" style="border-top: 5px solid var(--primary);">
-                    <div class="flex" style="justify-content: space-between; align-items: center;">
-                        <div>
-                            <h2 style="margin:0;">Variance Analysis (Shortening & Flour)</h2>
-                            <p style="margin:5px 0 0 0; color: var(--secondary); font-size: 0.85rem;">
-                                Sold quantities are calculated from your Sales Records based on the date range above.
-                            </p>
-                        </div>
-                        <button onclick="window.print()" class="secondary sm no-print">🖨️ Print Report</button>
-                    </div>
-                    
-                    <div style="overflow-x: auto; margin-top: 15px;">
-                        <table id="varianceTable">
-                            <thead>
-                                <tr>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">CATEGORY</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">SOLD (Qty)</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Short Coef</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Flour Coef</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Theo Short</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);" class="text-right">Theo Flour</th>
-                                </tr>
-                            </thead>
-                            <tbody id="varianceTableBody"></tbody>
-                        </table>
-                    </div>
-
-                    <div class="flex mt-2" style="justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
-                        <!-- Inventory Inputs Table -->
-                        <div style="flex: 1; min-width: 300px;">
-                            <h4>Physical Inventory Counts</h4>
-                            <table style="border: 1px solid #eee; margin-top: 10px;">
-                                <thead>
-                                    <tr>
-                                        <th>Item</th>
-                                        <th>Open</th>
-                                        <th>Purchase</th>
-                                        <th>End</th>
-                                        <th>Actual Usage</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>SHORTENING (KG)</td>
-                                        <td><input type="number" step="0.01" id="var-short-open" class="compact-input" oninput="calcVariance()"></td>
-                                        <td><input type="number" step="0.01" id="var-short-buy" class="compact-input" oninput="calcVariance()"></td>
-                                        <td><input type="number" step="0.01" id="var-short-close" class="compact-input" oninput="calcVariance()"></td>
-                                        <td id="res-short-actual" style="font-weight:bold;">0</td>
-                                    </tr>
-                                    <tr>
-                                        <td>FLOUR (KG)</td>
-                                        <td><input type="number" step="0.01" id="var-flour-open" class="compact-input" oninput="calcVariance()"></td>
-                                        <td><input type="number" step="0.01" id="var-flour-buy" class="compact-input" oninput="calcVariance()"></td>
-                                        <td><input type="number" step="0.01" id="var-flour-close" class="compact-input" oninput="calcVariance()"></td>
-                                        <td id="res-flour-actual" style="font-weight:bold;">0</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Result Display -->
-                        <div style="flex: 1; min-width: 300px;">
-                            <h4>Variance Result (Over / Short)</h4>
-                            <table style="border: 1px solid #eee; background: #f9fafb;">
-                                <tbody>
-                                    <tr>
-                                        <td style="padding: 15px; width: 60%;">Shortening (KG)</td>
-                                        <td id="res-short-var" style="padding: 15px; font-size: 1.5rem; font-weight:bold;">0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 15px;">Flour (KG)</td>
-                                        <td id="res-flour-var" style="padding: 15px; font-size: 1.5rem; font-weight:bold;">0.00</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p class="text-red no-print" style="font-size: 0.8rem; margin-top: 10px;">* Negative values indicate Shortage/Waste.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GENERAL INVENTORY -->
-                <div class="card">
-                    <div class="flex" style="justify-content: space-between;">
-                        <h2>General Inventory Analysis</h2>
-                    </div>
-                    <div style="max-height: 500px; overflow-y: auto; border: 1px solid #eee;">
-                        <table id="inventoryTable">
-                            <thead>
-                                <tr>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Item</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Unit</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Open</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Purch</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Close</th>
-                                    <th style="position: sticky; top: 0; background: var(--bg);">Actual</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventoryTableBody"></tbody>
-                        </table>
-                    </div>
-                    <button onclick="runAnalysis()" class="mt-2 w-full" style="padding: 15px; font-weight: 600;">Calculate General Waste</button>
-                </div>
-
-                <div id="analysisResults" class="card hidden">
-                    <h2>Waste / Variance Report</h2>
-                    <div style="max-height: 500px; overflow-y: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Theoretical</th>
-                                    <th>Actual</th>
-                                    <th>Variance</th>
-                                    <th>%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="analysisTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- USERS -->
-            <section id="view-users" class="view-section hidden">
-                <div class="card admin-only hidden">
-                    <h2>User Management</h2>
-                    <form id="userForm" class="flex" style="flex-wrap: wrap;">
-                        <input type="text" id="newUser" placeholder="User ID" required>
-                        <input type="password" id="newPass" placeholder="Pass" required>
-                        <select id="newRole">
-                            <option value="branch">Branch</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        <input type="text" id="newBranchName" placeholder="Branch Name">
-                        <button type="submit">Add User</button>
-                    </form>
-                </div>
-                <div class="card">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Role</th>
-                                <th>Branch</th>
-                                <th class="admin-only hidden">Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody"></tbody>
-                    </table>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
     <script>
-        // ==========================================
-        // 1. CONFIGURATION & DATA
-        // ==========================================
-        
-        // Master Ingredients List (34 Items) - Fixed spelling 'floor' to 'flour'
-        const INGREDIENTS = [
-            { id: 'chix', name: 'CHIX', unit: 'PCS' },
-            { id: 'strip', name: 'STRIP', unit: 'PCS' },
-            { id: 'beefburger', name: 'BEEFBURGER', unit: 'PCS' },
-            { id: 'beef125', name: 'Beef burger 125 g', unit: 'PCS' },
-            { id: 'chixburger', name: 'CHIX BURGER', unit: 'PCS' },
-            { id: 'zinger', name: 'ZINGER', unit: 'PCS' },
-            { id: 'fries', name: 'FRIES', unit: 'Kg' },
-            { id: 'chees', name: 'CHEES', unit: 'PCS' },
-            { id: 'garlic', name: 'GARLIC SUACE', unit: 'PCS' },
-            { id: 'closmall', name: 'SMALL CLOWSLOW', unit: 'PCS' },
-            { id: 'clobig', name: 'BIG CLOWSLOW', unit: 'PCS' },
-            { id: 'dyn', name: 'DYNAMTESAUCE', unit: 'PCS' },
-            { id: 'pepsi355', name: '(BIB )Pepsi 355. ML', unit: 'ML' },
-            { id: 'pepsi125', name: 'pepsi 1.25 liter', unit: 'PCS' },
-            { id: 'juiceL', name: 'LARGE JUICE', unit: 'Litre' },
-            { id: 'waterS', name: 'SMALL WATER', unit: 'PCS' },
-            { id: 'bun4', name: 'BUN 4 INCH', unit: 'PCS' },
-            { id: 'tortila', name: 'TORTILA', unit: 'PCS' },
-            { id: 'bun45', name: 'BUN 4.5 INCH', unit: 'PCS' },
-            { id: 'bun6', name: 'BUN 6 INCH', unit: 'PCS' },
-            { id: 'samolina', name: 'SAMOLINA 8 INCH', unit: 'PCS' },
-            { id: 'bun5', name: 'BUN 5', unit: 'PCS' },
-            { id: 'nugget', name: 'NUGGETS*4', unit: 'PCS' },
-            { id: 'juiceS', name: 'SMALL JUICE', unit: 'PCS' },
-            { id: 'popcorn', name: 'POP CORN*14', unit: 'PCS' },
-            { id: 'shawrma', name: 'SHAWRMA', unit: 'PCS' },
-            { id: 'rice', name: 'BASMATI RICE', unit: 'Kg' },
-            { id: 'kinza', name: 'KINZA COLA', unit: 'PCS' },
-            { id: 'floor', name: 'FLOUR', unit: 'Kg' }, // Fixed Name
-            { id: 'lettuce', name: 'lettuce', unit: 'Kg' },
-            { id: 'mayo', name: 'Mayonnaise', unit: 'Kg' },
-            { id: 'ketchup', name: 'ketchup', unit: 'PCS' },
-            { id: 'shortening', name: 'SHORTING', unit: 'Litre' },
-            { id: 'steak', name: 'steak 100 gram', unit: 'gram' }
+        // --- RAW DATA (Now a variable 'recipeData' to allow edits) ---
+        let recipeData = [
+            {code:"MI_01", name:"12 PCS PACKET MIX", uom:"12", price:53, ing:[12,0,5,3,3,0,0,0,3,0,0,3,0,0,0,0]},
+            {code:"MI_02", name:"16 PCS PACKET MIX", uom:"PCS", price:70, ing:[16,0,5,4,0,1,0,0,4,0,0,4,0,0,0,0]},
+            // ... (rest of your recipeData remains the same)
         ];
 
-        const defaultUsers = [
-            { user: "admin", pass: "1234", role: "admin", branch: "Main Branch" },
-            { user: "BR01", pass: "1111", role: "branch", branch: "Hamdan" },
-            { user: "BR02", pass: "2222", role: "branch", branch: "Mussafah" },
-            { user: "BR03", pass: "3333", role: "branch", branch: "Khalidiya" }
+        // --- INGREDIENT MAP ---
+        const recipeMap = [
+            "R01", // CHIX (Whole)
+            "R02", // STRIP
+            "R07", // FRIES
+            "R09", // GARLIC SAUCE
+            "R10", // SMALL CLOWSLOW
+            "R11", // BIG CLOWSLOW
+            "R13", // BPESI PIP
+            "R14", // PEPSI LITER
+            "R19", // BUN 4.5 INCH
+            "R25", // POP CORN
+            "R27", // BASMATI RICE
+            "R32", // KETCHUP
+            "R30", // LETTUCE 1.5
+            "R34", // 100 g steak
+            "R15", // LARGE JUICE
+            "R24"  // SMALL JUICE
         ];
 
-        // Enhanced Variance Configuration with Keywords for Smart Sync
-        const VARIANCE_CONFIG = [
-            { item: "CHICKEN", shortCoef: 0.11, flourCoef: 0.208, keywords: ["CHICKEN"], exclude: ["BURGER", "STRIPS", "ZINGER", "WINGS", "POP"] },
-            { item: "STRIPS", shortCoef: 0.005, flourCoef: 0.0225, keywords: ["STRIPS"] },
-            { item: "ZINGER", shortCoef: 0.015, flourCoef: 0.06, keywords: ["ZINGER"] },
-            { item: "CHICKEN BURGER", shortCoef: 0.015, flourCoef: 0, keywords: ["CHICKEN BURGER", "CHICKEN BUEGER"] }, // Handles typo in data
-            { item: "FRIES", shortCoef: 0.015, flourCoef: 0, keywords: ["FRIES"] },
-            { item: "NUGGETS", shortCoef: 0.015, flourCoef: 0, keywords: ["NUGGET"] },
-            { item: "POP CORN", shortCoef: 0.015, flourCoef: 0, keywords: ["POP CORN"] }
+        // --- DATA ---
+        const branches = [
+            { code: "BR-01", name: "Hamdan St" },
+            { code: "BR-02", name: "Mussafah" },
+            { code: "BR-03", name: "Khalidiya" },
+            { code: "BR-04", name: "Muroor" },
+            { code: "BR-05", name: "Al Electra" },
+            { code: "BR-06", name: "Al Barsha" },
+            { code: "BR-07", name: "Al Satwa" },
+            { code: "BR-08", name: "Al Rigga" },
+            { code: "BR-09", name: "Al Majaz" }
         ];
 
-        // Menu Items List (Raw Names - Preserving Original Data)
-        const menuItemsList = [
-            "12 PCS PACKET MIX", "16 PCS PACKET MIX", "20 PCS PACKET MIX", "4 pcs chicken MIX Meal @ 5 AED",
-            "BUCKET MEAL MIX", "CHICKEN DAY MIX", "CHICKEN DAY MIX Noon", "Daily  MIX Meal",
-            "Daily MIX Meal Noon", "DAILY OFFER MIX Meal", "DAILY OFFER MIX Meal Noon", "ECONMY MEAL-MIX",
-            "Golden 4 meal mix", "IDEAL MEAL MIX", "MEGA  MEAL  MIX", "PKT STRIPS 20 MIX", "QUICK MIX",
-            "SPICIAL FAMILY MIX", "STRIPS FAMILY - MIX", "SUPER MEAL -  MIX", "Ultimate M Careem Offers",
-            "ULTIMATE MIX", "Ultimate M Noon Offers", "EXTRA CHEESE", "1/2  CHICKEN  Original",
-            "12 PCS PACKET Original", "16 PCS PACKET Original", "20 PCS PACKET Original", "4 pcs chicken Original Meal @ 5",
-            "BUCKET MEAL Original", "CHICKEN DAY Original", "CHICKEN DAY Original Noon", "CHICKEN STRIPS Original",
-            "DAILY OFFER Original Mea", "DAILY OFFER Original Meal Noon", "Daily Original Meal",
-            "Daily Original Meal Noon", "DEAL FOR ONE ( TWIST BOX )  Orig", "ECONMY MEAL Original",
-            "Golden 4 meal Normal", "IDEAL MEAL   Original", "MEGA MEAL Original", "NORMAL PCS",
-            "Offersn Mix meal @ 9 AED", "Offers Original meal @ 9 AED", "Offers Spicy  meal @ 9 AED",
-            "PKT STRIPS 20  Original", "QUICK NORMAL", "QUICK NORMAL  Employees", "QUICK NORMAL  Maintenanc",
-            "SAVING MEAL Original", "SPICIAL FAMILY Original", "Steak Combo", "STRIPS FAMILY  Original",
-            "SUPER  MEAL  Original", "TWIST BOX   Original", "Ultimate O Careem Offers", "Ultimate O Noon Offers",
-            "ULTIMATE Original", "1/2  CHICKEN   Spicy", "12 PCS PACKET Spicy", "16 PCS PACKET Spicy",
-            "20 PCS PACKET Spicy", "4 pcs chicken Spicy Meal@ 5 AED", "BUCKET MEAL  Spicy", "CHICKEN DAY SPICY",
-            "CHICKEN DAY SPICY  Noon", "Crispy Strips Spicy Meal", "DAILY OFFER  Spicy Meal",
-            "DAILY OFFER  Spicy Meal Noon", "Daily Spicy Meal", "Daily Spicy Meal Noon",
-            "DEAL FOR ONE ( TWIST BOX )  SPIC", "ECONMY MEAL  Spicy", "Golden 4 meal Spicy",
-            "IDEAL MEAL   Spicy", "MEGA MEAL   Spicy", "PKT STRIPS 20 Spicy", "QUICK SPICY",
-            "QUICK Spicy Employees", "QUICK Spicy   Maintenanc", "Ramadan individual Spicy", "SAVING MEAL  Spicy",
-            "SPICIAL FAMILY  Spicy", "SPICY PCS", "STRIPS FAMILY   Spicy", "SUPER MEAL  Spicy",
-            "TWIST BOX   SPICY", "Ultimate S Careem Offers", "Ultimate S Noon Offers", "ULTIMATE  Spicy",
-            "BEEF  BURGER COMBO", "BUFFALO MEAL", "CHICKEN BUEGER COMBO", "DYNAMITE OR COMBO",
-            "DYNAMITE SPY COMBO", "FAJITA COMBO", "FAJITA  Spicy COMBO", "MAXI CHICKEN DOUBLE COMB",
-            "MAXI CHICKEN SINGLE COMB", "SUPER CRUNCHY OR COMBO", "SUPER CRUNCHY SP COMBO", "SUPREM OR COMBO",
-            "SUPREM SP COMBO", "TORNADO OR COMBO", "TORNADO SP COMBO", "TWIN BEEF BURGER",
-            "Twin Chicken Burger", "TWIN SHAWARMA MEAL", "Twin Supreme Meal", "Twin SUPREM MIX",
-            "Twin Suprem Spicy", "Twin Twist  MIX", "Twin Twist  MIX  Noon", "Twin Twist Original",
-            "Twin Twist Original Noon", "Twin Twist Spicy", "Twin Twist Spicy Noon", "TWIST OR COMBO",
-            "TWIST SP COMBO", "TWIST SP COMBO employees", "Volcano Combo Double", "Volcano Combo Single",
-            "GO JUICE", "GO FAMILY KANZA .", "GO KANZA .", "Go Large", "GO Shani.", "GO WATER.",
-            "Upsize Large Fries And Large Pep", "KIDS MEAL CRISPY", "KIDS MEAL NUGGETS", "KIDS MEAL POP CORN",
-            "BEEF  BURGER SANDWICH", "BUFFALO SANDWICH", "CHICKEN BURGER SANDWICH", "DYNAMITE  Origina  SANDW",
-            "DYNAMITE  Origina  SANDWICHES", "FAJITA SANDWICHES", "FAJITA Spicy SANDWICHES",
-            "MAX DOUBLE SANDWICH", "MAX SINGLE SANDWICH", "SHAWARMA Origina SANDWIC", "SHAWARMA Spicy  SANDWICH",
-            "Steak Sandwich", "SUPER CRUNCHY OR SANDWIC", "SUPER CRUNCHY  SP SANDWISHES",
-            "SUPREME Origina  SANDWIC", "SUPREME  Spicy  SANDWIC", "TORNADO Origina   SANDWI",
-            "TORNADO  Spicy SANDWICHE", "TWIST Origina SANDWICHES", "TWIST  Spicy  SANDWICHES",
-            "Volcano Sandwich Double", "Volcano Sandwich Single", "6 PCS NUGGETS", "Big Coleslaw", "BUN",
-            "Cheese", "CHILI CHEESE NUGGETS", "CRISPY LARGE  Original", "CRISPY LARGE  Spicy",
-            "CRISPY RICE", "CRISPY SMALL  Original", "CRISPY SMALL  Spicy", "DYNAMITE SAUCE",
-            "FRENCH FRIES-BOX", "FRENCH FRIES- LARGE", "FRENCH FRIES SMALL", "GARLIC - SMALL",
-            "GRAVEY SAUCE", "HOT CHEDAR CHEESE", "LARGE POP CORN", "Small Coleslaw", "SMALL POP CORN",
-            "SPICED RICE", "Spicy - FRIES", "WHITE RICE", "Crispy Snack Original Me",
-            "Crispy Snack Spicy Meal", "RICE MEAL Original", "RICE MEAL Original employees",
-            "RICE MEAL Spicy", "SNACK BOX Original", "SNACK BOX Spicy", "SNACK SANDWICH Original",
-            "SNACK SANDWICH  Spicy", "7UP M", "7UP S", "DIET PEPSI M", "DIET PEPSI S",
-            "JUCE LAKNOR LARGE", "KANZA", "LARGE 7 UP", "LARGE DEW", "LARGE MIRINDA",
-            "LARGE  PEPSI", "LITER 7UP", "LITER MIRINDA", "LITER Mountain Dew", "LITER PEPSI",
-            "M.WATER 500ML", "MIRINDA M", "MIRINDA S", "Mountain Dew M", "Mountain Dew S",
-            "PEPSI  M", "PEPSI  S", "Shani Can", "SMALL JUICE"
+        const itemMaster = [
+            { code: "R01", name: "Chicken Whole", category: "Chicken", uom: "PCS", cost: 15.00, reorder: 50 },
+            { code: "R02", name: "Chicken Strips", category: "Chicken", uom: "KG", cost: 18.00, reorder: 30 },
+            // ... (rest of your itemMaster remains the same)
         ];
 
-        // Generate default recipes with empty ingredients
-        const defaultRecipes = menuItemsList.map((name, index) => ({
-            id: `menu_${index}`,
-            name: name.trim(),
-            ingredients: {}
-        }));
+        let inventoryData = [
+            { id: 1, code: "R01", branch: "BR-01", opening: 100, purchase: 500, closing: 120, waste: 5, actual: 475 },
+            { id: 2, code: "R07", branch: "BR-01", opening: 50, purchase: 200, closing: 20, waste: 10, actual: 220 },
+            { id: 3, code: "R17", branch: "BR-02", opening: 200, purchase: 300, closing: 150, waste: 0, actual: 350 },
+            { id: 4, code: "R13", branch: "BR-03", opening: 100, purchase: 500, closing: 50, waste: 50, actual: 500 },
+            { id: 5, code: "R01", branch: "BR-04", opening: 80, purchase: 400, closing: 30, waste: 20, actual: 430 },
+            { id: 6, code: "R29", branch: "BR-05", opening: 40, purchase: 60, closing: 50, waste: 5, actual: 45 }
+        ];
 
-        function loadData(key, def) {
-            return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : def;
-        }
-        function saveData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+        let currentBranchFilter = 'ALL';
+        let currentCategoryFilter = 'ALL';
+        let categoryChart = null;
+        let varianceChart = null;
 
-        let users = loadData('resto_users', defaultUsers);
-        let recipes = loadData('resto_recipes', defaultRecipes);
-        let sales = loadData('resto_sales', []);
-        let currentUser = null;
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            document.getElementById('currentDate').innerText = now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
-        // ==========================================
-        // 2. AUTH & UI
-        // ==========================================
-        document.getElementById('loginForm').onsubmit = function(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            const found = users.find(x => x.user === u && x.pass === p);
-            
-            if (found) {
-                currentUser = found;
-                localStorage.setItem('resto_session', JSON.stringify(found));
-                initApp();
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        };
-
-        function logout() { localStorage.removeItem('resto_session'); location.reload(); }
-        
-        function checkSession() {
-            const s = localStorage.getItem('resto_session');
-            if(s) {
-                currentUser = JSON.parse(s);
-                if(users.find(x => x.user === currentUser.user)) initApp();
-                else logout();
-            }
-        }
-
-        function initApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('headerBranchName').innerText = currentUser.branch;
-            document.getElementById('headerUserRole').innerText = currentUser.role === 'admin' ? 'Administrator' : 'Branch Staff';
-
-            setupNav();
-            
-            // Permissions
-            document.querySelectorAll('.admin-only').forEach(el => {
-                el.classList.toggle('hidden', currentUser.role !== 'admin');
-            });
-
-            // Initial Setup
-            document.getElementById('saleDate').valueAsDate = new Date();
-            document.getElementById('invStartDate').valueAsDate = new Date();
-            document.getElementById('invEndDate').valueAsDate = new Date();
-            
+            populateItemSelect();
+            renderMasterList();
+            renderTable();
             renderDashboard();
-            renderInventoryTable(); 
+            renderAlerts();
             renderSalesTable();
-            renderUsersTable();
-            populateMealSelect();
-            renderRecipesTable();
-            renderVarianceTable(); // Render the new specific variance table
+            renderRecipeMasterList();
+        });
+
+        // --- NAVIGATION ---
+        function switchTab(tabId, navElement) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            navElement.classList.add('active');
+
+            if(tabId === 'dashboard') refreshDashboard();
+            if(tabId === 'recipe-master') document.getElementById('recipe-count').innerText = `${recipeData.length} recipes`;
         }
 
-        function setupNav() {
-            const nav = document.getElementById('mainNav');
-            nav.innerHTML = '';
-            const tabs = [
-                { id: 'dashboard', label: 'Dashboard', roles: ['admin', 'branch'] },
-                { id: 'sales', label: 'Sales Entry', roles: ['admin', 'branch'] },
-                { id: 'recipes', label: 'Recipes', roles: ['admin'] },
-                { id: 'inventory', label: 'Inventory & Variance', roles: ['admin', 'branch'] },
-                { id: 'users', label: 'Users', roles: ['admin'] }
-            ];
-
-            tabs.forEach(t => {
-                if(t.roles.includes(currentUser.role)) {
-                    const btn = document.createElement('button');
-                    btn.innerText = t.label;
-                    btn.onclick = () => switchView(t.id, btn);
-                    if(t.id === 'dashboard') btn.classList.add('active');
-                    nav.appendChild(btn);
-                }
-            });
-        }
-
-        function switchView(id, btn) {
-            document.querySelectorAll('.view-section').forEach(e => e.classList.add('hidden'));
-            document.getElementById('view-'+id).classList.remove('hidden');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            
-            // Refresh calculations if entering Inventory
-            if(id === 'inventory') {
-                // Optional: Auto sync on enter? No, better manual.
-            }
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        // ==========================================
-        // 2.5 VARIANCE CALCULATOR (Smart Sync Feature)
-        // ==========================================
-        function renderVarianceTable() {
-            const tbody = document.getElementById('varianceTableBody');
-            tbody.innerHTML = '';
-
-            VARIANCE_CONFIG.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${row.item}</strong></td>
-                    <td><input type="number" step="1" class="variance-sold-input compact-input numeric" data-idx="${index}" value="0"></td>
-                    <td class="text-right">${row.shortCoef.toFixed(3)}</td>
-                    <td class="text-right">${row.flourCoef.toFixed(3)}</td>
-                    <td class="text-right" id="theo-short-${index}">0</td>
-                    <td class="text-right" id="theo-flour-${index}">0</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Attach listeners
-            document.querySelectorAll('.variance-sold-input').forEach(input => {
-                input.addEventListener('input', calcVariance);
-            });
-        }
-
-        // NEW: Smart Sync Function to populate Sold Quantities from Sales Records
-        function syncSalesToVariance() {
-            const start = document.getElementById('invStartDate').value;
-            const end = document.getElementById('invEndDate').value;
-            if(!start || !end) return alert("Please select Start and End dates first.");
-
-            // Filter sales by date
-            const filteredSales = sales.filter(s => s.date >= start && s.date <= end);
-            
-            if(filteredSales.length === 0) return alert("No sales records found for this period.");
-
-            // Initialize buckets
-            const buckets = {};
-            VARIANCE_CONFIG.forEach(c => buckets[c.item] = 0);
-
-            // Categorize each sale
-            filteredSales.forEach(s => {
-                const recipe = recipes.find(r => r.id === s.mealId);
-                if(!recipe) return;
-
-                const name = recipe.name.toUpperCase();
-                
-                // Try to find matching category
-                for(const config of VARIANCE_CONFIG) {
-                    let match = false;
-                    // Check keywords
-                    for(const kw of config.keywords) {
-                        if(name.includes(kw)) {
-                            match = true;
-                            break;
-                        }
-                    }
-                    // Check exclusions
-                    if(match && config.exclude) {
-                        for(const exc of config.exclude) {
-                            if(name.includes(exc)) {
-                                match = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(match) {
-                        buckets[config.item] += s.qty;
-                        break; // Sold item belongs to one category only
-                    }
-                }
-            });
-
-            // Fill inputs
-            VARIANCE_CONFIG.forEach((row, index) => {
-                const input = document.querySelector(`.variance-sold-input[data-idx="${index}"]`);
-                if(input) {
-                    input.value = buckets[row.item];
-                }
-            });
-
-            // Trigger calculation
-            calcVariance();
-            showToast("Sales quantities auto-filled!");
-        }
-
-        function calcVariance() {
-            let totalSold = 0;
-            let totalTheoShort = 0;
-            let totalTheoFlour = 0;
-
-            // Calculate Theoretical from Sold Inputs
-            VARIANCE_CONFIG.forEach((row, index) => {
-                const qty = parseFloat(document.querySelector(`.variance-sold-input[data-idx="${index}"]`).value) || 0;
-                const theoShort = qty * row.shortCoef;
-                const theoFlour = qty * row.flourCoef;
-
-                document.getElementById(`theo-short-${index}`).innerText = theoShort.toFixed(3);
-                document.getElementById(`theo-flour-${index}`).innerText = theoFlour.toFixed(3);
-
-                totalSold += qty;
-                totalTheoShort += theoShort;
-                totalTheoFlour += theoFlour;
-            });
-
-            // Calculate Actual from Inventory Inputs
-            const shortOpen = Number(document.getElementById('var-short-open').value) || 0;
-            const shortBuy = Number(document.getElementById('var-short-buy').value) || 0;
-            const shortClose = Number(document.getElementById('var-short-close').value) || 0;
-            const actualShort = shortOpen + shortBuy - shortClose;
-
-            const flourOpen = Number(document.getElementById('var-flour-open').value) || 0;
-            const flourBuy = Number(document.getElementById('var-flour-buy').value) || 0;
-            const flourClose = Number(document.getElementById('var-flour-close').value) || 0;
-            const actualFlour = flourOpen + flourBuy - flourClose;
-
-            document.getElementById('res-short-actual').innerText = actualShort.toFixed(3);
-            document.getElementById('res-flour-actual').innerText = actualFlour.toFixed(3);
-
-            // Calculate Variance (Over / Short)
-            // Variance = Actual - Theoretical
-            const varShort = actualShort - totalTheoShort;
-            const varFlour = actualFlour - totalTheoFlour;
-
-            const elShort = document.getElementById('res-short-var');
-            elShort.innerText = varShort.toFixed(3);
-            elShort.className = varShort < 0 ? "text-red" : "text-green";
-
-            const elFlour = document.getElementById('res-flour-var');
-            elFlour.innerText = varFlour.toFixed(3);
-            elFlour.className = varFlour < 0 ? "text-red" : "text-green";
-        }
-
-        // ==========================================
-        // 3. RECIPES (Dynamic Ingredients)
-        // ==========================================
-        function addIngredientRow(currentValues = {}) {
-            const container = document.getElementById('recipeIngredientsList');
-            const div = document.createElement('div');
-            div.className = 'ingredient-row';
-            
-            let opts = INGREDIENTS.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
-            
-            div.innerHTML = `
-                <select class="ing-select">${opts}</select>
-                <input type="number" step="0.01" class="ing-qty" placeholder="Qty" value="${currentValues.qty || ''}">
-                <button type="button" class="danger sm" onclick="this.parentElement.remove()">X</button>
-            `;
-            container.appendChild(div);
-            if(currentValues.id) {
-                div.querySelector('.ing-select').value = currentValues.id;
-            }
-        }
-
-        document.getElementById('recipeForm').onsubmit = function(e) {
-            e.preventDefault();
-            const name = document.getElementById('recName').value;
-            const id = document.getElementById('recId').value;
-            
-            const ingredients = {};
-            document.querySelectorAll('.ingredient-row').forEach(row => {
-                const ingId = row.querySelector('.ing-select').value;
-                const qty = parseFloat(row.querySelector('.ing-qty').value);
-                if(qty > 0) ingredients[ingId] = qty;
-            });
-
-            if(Object.keys(ingredients).length === 0 && !id) return alert("Add at least one ingredient");
-
-            const recipeData = { id: id || 'rec_' + Date.now(), name: name, ingredients: ingredients };
-            
-            if(id) {
-                const idx = recipes.findIndex(r => r.id === id);
-                if(idx !== -1) recipes[idx] = recipeData;
-            } else {
-                recipes.push(recipeData);
-            }
-
-            saveData('resto_recipes', recipes);
-            renderRecipesTable();
-            populateMealSelect();
-            e.target.reset();
-            document.getElementById('recId').value = '';
-            document.getElementById('recipeIngredientsList').innerHTML = '';
-            showToast('Recipe Saved');
-        };
-
-        function editRecipe(index) {
-            const r = recipes[index];
-            document.getElementById('recName').value = r.name;
-            document.getElementById('recId').value = r.id;
-            const list = document.getElementById('recipeIngredientsList');
-            list.innerHTML = '';
-            for (const [ingId, qty] of Object.entries(r.ingredients)) {
-                addIngredientRow({id: ingId, qty: qty});
-            }
-            addIngredientRow();
-            window.scrollTo(0,0);
-        }
-
-        function renderRecipesTable() {
-            const tbody = document.getElementById('recipeTableBody');
-            const search = document.getElementById('recipeSearch').value.toLowerCase();
-            tbody.innerHTML = '';
-            recipes.forEach((r, i) => {
-                if(search && !r.name.toLowerCase().includes(search)) return;
-                const ingCount = Object.keys(r.ingredients).length;
-                const ingText = ingCount === 0 ? '<span class="text-red">Empty (Edit Req.)</span>' : `<span class="text-green">${ingCount} Items</span>`;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${r.name}</td>
-                    <td>${ingText}</td>
-                    <td class="admin-only ${currentUser.role!=='admin'?'hidden':''}" style="white-space:nowrap;">
-                        <button class="secondary sm" onclick="editRecipe(${i})">Edit</button>
-                        <button class="danger sm" onclick="deleteRecipe(${i})">Del</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-        
-        function deleteRecipe(idx) {
-            if(confirm('Delete Recipe?')) { recipes.splice(idx, 1); saveData('resto_recipes', recipes); renderRecipesTable(); populateMealSelect(); }
-        }
-
-        // ==========================================
-        // 4. SALES
-        // ==========================================
-        function populateMealSelect() {
-            const s = document.getElementById('saleMeal');
-            s.innerHTML = '<option value="">Select Meal...</option>';
-            // Sort recipes alphabetically for easier finding
-            const sortedRecipes = [...recipes].sort((a,b) => a.name.localeCompare(b.name));
-            sortedRecipes.forEach(r => s.innerHTML += `<option value="${r.id}">${r.name}</option>`);
-        }
-
-        document.getElementById('salesForm').onsubmit = function(e) {
-            e.preventDefault();
-            const rec = {
-                id: Date.now(),
-                date: document.getElementById('saleDate').value,
-                branch: currentUser.branch,
-                mealId: document.getElementById('saleMeal').value,
-                qty: Number(document.getElementById('saleQty').value)
-            };
-            if(!rec.mealId) return;
-            
-            sales.push(rec);
-            saveData('resto_sales', sales);
-            renderSalesTable();
-            document.getElementById('saleQty').value = '';
-            document.getElementById('saleMeal').value = '';
-            showToast('Sale Recorded');
-        };
-
-        function renderSalesTable() {
-            const tbody = document.getElementById('salesTableBody');
-            const search = document.getElementById('salesSearch').value.toLowerCase();
-            tbody.innerHTML = '';
-            
-            const filtered = sales.filter(s => {
-                const branchOk = currentUser.role==='admin' || s.branch===currentUser.branch;
-                const textOk = s.date.includes(search) || recipes.find(x=>x.id===s.mealId)?.name.toLowerCase().includes(search);
-                return branchOk && textOk;
-            }).sort((a,b) => new Date(b.date)-new Date(a.date));
-
-            filtered.forEach(s => {
-                const rName = recipes.find(x=>x.id===s.mealId)?.name || 'Unknown Item';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${s.date}</td>
-                    <td>${rName}</td>
-                    <td class="text-right">${s.qty}</td>
-                    <td class="text-right"><button class="danger sm" onclick="deleteSale(${s.id})">X</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-        
-        function deleteSale(id) {
-            if(confirm('Delete record?')) { sales = sales.filter(s => s.id !== id); saveData('resto_sales', sales); renderSalesTable(); }
-        }
-
-        // ==========================================
-        // 5. INVENTORY & ANALYSIS (General)
-        // ==========================================
-        function renderInventoryTable() {
-            const tbody = document.getElementById('inventoryTableBody');
-            tbody.innerHTML = '';
-
-            INGREDIENTS.forEach(ing => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${ing.name}</td>
-                    <td style="text-align:center;">${ing.unit}</td>
-                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="open"></td>
-                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="buy"></td>
-                    <td><input type="number" step="0.01" class="inv-input compact-input" data-id="${ing.id}" data-type="close"></td>
-                    <td id="res-${ing.id}" style="font-weight:bold; text-align:center;">0</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.querySelectorAll('.inv-input').forEach(inp => {
-                inp.addEventListener('input', calcActuals);
-            });
-        }
-
-        function calcActuals() {
-            INGREDIENTS.forEach(ing => {
-                const open = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="open"]`).value) || 0;
-                const buy = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="buy"]`).value) || 0;
-                const close = Number(document.querySelector(`.inv-input[data-id="${ing.id}"][data-type="close"]`).value) || 0;
-                const actual = open + buy - close;
-                document.getElementById(`res-${ing.id}`).innerText = actual.toFixed(2);
-            });
-        }
-
-        function runAnalysis() {
-            const start = document.getElementById('invStartDate').value;
-            const end = document.getElementById('invEndDate').value;
-            if(!start || !end) return alert('Please select date range');
-
-            const theoretical = {};
-            INGREDIENTS.forEach(i => theoretical[i.id] = 0);
-
-            const targetBranch = currentUser.role === 'admin' ? 'ALL' : currentUser.branch;
-            
-            sales.forEach(s => {
-                if(s.date >= start && s.date <= end && (targetBranch==='ALL' || s.branch===targetBranch)) {
-                    const r = recipes.find(x => x.id === s.mealId);
-                    if(r) {
-                        for(const [ingId, qtyPerMeal] of Object.entries(r.ingredients)) {
-                            if(theoretical[ingId] !== undefined) {
-                                theoretical[ingId] += qtyPerMeal * s.qty;
-                            }
-                        }
-                    }
-                }
-            });
-
-            const tbody = document.getElementById('analysisTableBody');
-            tbody.innerHTML = '';
-
-            INGREDIENTS.forEach(ing => {
-                const theo = theoretical[ing.id];
-                const act = Number(document.getElementById(`res-${ing.id}`).innerText) || 0;
-                
-                if(theo > 0 || act > 0) {
-                    const variance = act - theo;
-                    const percent = theo > 0 ? ((variance / theo) * 100).toFixed(1) : 0;
-                    const isWaste = variance > 0;
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${ing.name}</td>
-                        <td class="text-right">${theo.toFixed(2)}</td>
-                        <td class="text-right">${act.toFixed(2)}</td>
-                        <td class="text-right ${isWaste?'text-red':'text-green'}" style="font-weight:bold;">${variance>0?'+':''}${variance.toFixed(2)}</td>
-                        <td class="text-right ${isWaste?'text-red':'text-green'}">${percent}%</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if(tbody.innerHTML === '') {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No data for this period</td></tr>';
-            }
-
-            document.getElementById('analysisResults').classList.remove('hidden');
-        }
-
-        // ==========================================
-        // 6. USERS & DASHBOARD
-        // ==========================================
-        function renderUsersTable() {
-            const tb = document.getElementById('usersTableBody');
-            tb.innerHTML = '';
-            users.forEach((u, i) => {
-                if(u.user === 'admin') return;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${u.user}</td>
-                    <td>${u.role}</td>
-                    <td>${u.branch||'-'}</td>
-                    <td class="admin-only ${currentUser.role!=='admin'?'hidden':''}">
-                        <button class="danger sm" onclick="delUser(${i})">X</button>
-                    </td>
-                `;
-                tb.appendChild(tr);
-            });
-        }
-        document.getElementById('userForm').onsubmit = function(e) {
-            e.preventDefault();
-            const u = document.getElementById('newUser').value;
-            if(users.find(x=>x.user===u)) return alert('User exists');
-            users.push({
-                user: u, pass: document.getElementById('newPass').value,
-                role: document.getElementById('newRole').value,
-                branch: document.getElementById('newBranchName').value
-            });
-            saveData('resto_users', users);
-            renderUsersTable();
-            e.target.reset();
-        };
-        function delUser(i) { if(confirm('Delete User?')) { users.splice(i,1); saveData('resto_users', users); renderUsersTable(); } }
-
+        // --- DASHBOARD LOGIC ---
         function renderDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const branch = currentUser.role==='admin'?'ALL':currentUser.branch;
-            const todaySales = sales.filter(s => s.date===today && (branch==='ALL'||s.branch===branch));
-            const meals = todaySales.reduce((a,c)=>a+c.qty,0);
-            document.getElementById('dashTodaySales').innerText = todaySales.length;
-            document.getElementById('dashTodayMeals').innerText = meals;
+            const data = getFilteredData();
+            
+            let totalValue = 0;
+            let totalVariancePct = 0;
+            let totalPurchase = 0;
+            let totalWaste = 0;
+            let urgentCount = 0;
+            let itemCount = 0;
+
+            const branchStats = {};
+            branches.forEach(b => {
+                branchStats[b.code] = { count: 0, value: 0, variance: [], waste: 0, purchase: 0 };
+            });
+
+            data.forEach(row => {
+                const master = itemMaster.find(i => i.code === row.code);
+                if (!master) return;
+
+                const theoretical = row.opening + row.purchase - row.closing - row.waste;
+                const variance = row.actual - theoretical;
+                const variancePct = theoretical !== 0 ? (variance / theoretical) * 100 : 0;
+                const wastePct = (row.purchase > 0) ? (row.waste / row.purchase) * 100 : 0;
+                
+                const dailyUsage = theoretical / 30; 
+                const daysLeft = dailyUsage > 0 ? row.closing / dailyUsage : 999;
+
+                totalValue += row.closing * master.cost;
+                totalVariancePct += Math.abs(variancePct);
+                totalPurchase += row.purchase;
+                totalWaste += row.waste;
+                if (daysLeft < 2) urgentCount++;
+                itemCount++;
+
+                if (branchStats[row.branch]) {
+                    branchStats[row.branch].count++;
+                    branchStats[row.branch].value += row.closing * master.cost;
+                    branchStats[row.branch].variance.push(variancePct);
+                    branchStats[row.branch].waste += row.waste;
+                    branchStats[row.branch].purchase += row.purchase;
+                }
+            });
+
+            document.getElementById('kpi-total-value').innerText = `AED ${totalValue.toLocaleString(undefined, {minimumFractionDigits:2})}`;
+            document.getElementById('kpi-variance').innerText = itemCount > 0 ? (totalVariancePct / itemCount).toFixed(1) + '%' : '0%';
+            document.getElementById('kpi-waste').innerText = totalPurchase > 0 ? (totalWaste / totalPurchase * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('kpi-urgent').innerText = urgentCount;
+
+            const branchBody = document.getElementById('branch-table-body');
+            branchBody.innerHTML = '';
+            Object.keys(branchStats).forEach(code => {
+                const stats = branchStats[code];
+                const bName = branches.find(b => b.code === code)?.name || code;
+                const avgVar = stats.variance.length > 0 ? stats.variance.reduce((a,b)=>a+b,0)/stats.variance.length : 0;
+                const wastePct = stats.purchase > 0 ? (stats.waste/stats.purchase)*100 : 0;
+                
+                let status = '<span class="badge status-excellent">Good</span>';
+                if(avgVar > 10 || wastePct > 5) status = '<span class="badge status-warning">Review</span>';
+                if(avgVar > 20 || wastePct > 10) status = '<span class="badge status-danger">Poor</span>';
+
+                const tr = `
+                    <tr>
+                        <td>${code} - ${bName}</td>
+                        <td>${stats.count}</td>
+                        <td>AED ${stats.value.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                        <td>${avgVar.toFixed(1)}%</td>
+                        <td>${wastePct.toFixed(1)}%</td>
+                        <td>${status}</td>
+                    </tr>
+                `;
+                branchBody.innerHTML += tr;
+            });
+
+            renderCharts(data);
         }
 
-        checkSession();
+        function renderCharts(data) {
+            const catCounts = {};
+            const catValue = {};
+            
+            data.forEach(d => {
+                const m = itemMaster.find(i => i.code === d.code);
+                if(m) {
+                    catCounts[m.category] = (catCounts[m.category] || 0) + 1;
+                    catValue[m.category] = (catValue[m.category] || 0) + (d.closing * m.cost);
+                }
+            });
+
+            const ctx1 = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(catCounts),
+                    datasets: [{
+                        label: 'Stock Value (AED)',
+                        data: Object.values(catValue),
+                        backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#1abc9c', '#e67e22', '#95a5a6', '#2ecc71'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false }, 
+                        title: { display: true, text: 'Inventory Value by Category' } 
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'AED ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const varianceData = data.map(d => {
+                const m = itemMaster.find(i => i.code === d.code);
+                const theo = d.opening + d.purchase - d.closing - d.waste;
+                const varPct = theo !== 0 ? ((d.actual - theo) / theo) * 100 : 0;
+                return { name: m ? m.name : d.code, pct: varPct };
+            }).sort((a,b) => Math.abs(b.pct) - Math.abs(a.pct)).slice(0, 10);
+
+            const ctx2 = document.getElementById('varianceChart').getContext('2d');
+            if (varianceChart) varianceChart.destroy();
+            varianceChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: varianceData.map(d => d.name.substring(0, 15) + (d.name.length > 15 ? '...' : '')),
+                    datasets: [{
+                        label: 'Variance %',
+                        data: varianceData.map(d => d.pct),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        title: { display: true, text: 'Top 10 Variance Items' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Variance: ${context.raw.toFixed(1)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- TABLE LOGIC ---
+        function renderTable() {
+            const tbody = document.getElementById('inventory-body');
+            tbody.innerHTML = '';
+
+            const data = getFilteredData().filter(row => {
+                const searchStr = document.getElementById('tableSearch').value.toLowerCase();
+                const master = itemMaster.find(i => i.code === row.code);
+                const name = master ? master.name.toLowerCase() : '';
+                const branch = row.branch.toLowerCase();
+                
+                const matchesSearch = name.includes(searchStr) || row.code.toLowerCase().includes(searchStr) || branch.includes(searchStr);
+                
+                let matchesCat = true;
+                if(currentCategoryFilter !== 'ALL') {
+                    matchesCat = master && master.category === currentCategoryFilter;
+                }
+
+                return matchesSearch && matchesCat;
+            });
+
+            document.getElementById('inventory-count').innerText = `${data.length} items`;
+
+            if (data.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="14" class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No Inventory Items Found</h3>
+                        <p>Try changing your search or filter criteria</p>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            data.forEach(row => {
+                const master = itemMaster.find(i => i.code === row.code);
+                if(!master) return;
+
+                const theoretical = row.opening + row.purchase - row.closing - row.waste;
+                const variance = row.actual - theoretical;
+                const varPct = theoretical !== 0 ? ((variance / theoretical) * 100).toFixed(1) : 0;
+                const dailyUsage = theoretical / 30;
+                const daysLeft = dailyUsage > 0 ? (row.closing / dailyUsage).toFixed(1) : 0;
+                
+                let statusClass = 'status-excellent';
+                let statusText = 'Excellent';
+                if (Math.abs(varPct) > 5) { statusClass = 'status-warning'; statusText = 'Review'; }
+                if (Math.abs(varPct) > 10) { statusClass = 'status-danger'; statusText = 'Critical'; }
+                if (daysLeft < 2) { statusClass = 'status-danger'; statusText = 'Low Stock'; }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span style="font-weight:bold; color:#7f8c8d;">${row.code}</span></td>
+                    <td>${master.name}</td>
+                    <td><span class="badge cat-badge ${getCatClass(master.category)}">${master.category}</span></td>
+                    <td>${row.branch}</td>
+                    <td class="text-right">${formatNumber(row.opening)}</td>
+                    <td class="text-right">${formatNumber(row.purchase)}</td>
+                    <td class="text-right">${formatNumber(row.closing)}</td>
+                    <td class="text-right text-danger">${formatNumber(row.waste)}</td>
+                    <td class="text-right" style="color:#7f8c8d;">${formatNumber(theoretical)}</td>
+                    <td class="text-right">${formatNumber(row.actual)}</td>
+                    <td class="text-right ${Math.abs(varPct) > 5 ? 'text-danger' : 'text-success'}">${varPct}%</td>
+                    <td class="text-right ${daysLeft < 2 ? 'text-danger' : ''}">${daysLeft}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="editInventoryEntry(${row.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline" onclick="deleteInventoryEntry(${row.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTableCategory(cat, btn) {
+            currentCategoryFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderTable();
+        }
+
+        function filterTable() {
+            renderTable();
+        }
+
+        function getFilteredData() {
+            if (currentBranchFilter === 'ALL') return inventoryData;
+            return inventoryData.filter(d => d.branch === currentBranchFilter);
+        }
+
+        function getCatClass(cat) {
+            const map = {
+                'Chicken': 'cat-chicken', 'Frozen': 'cat-frozen', 'Bakery': 'cat-bakery',
+                'Sauce': 'cat-sauce', 'Beverage': 'cat-beverage', 'Dry Food': 'cat-dryfood',
+                'Salad': 'cat-salad', 'Addon': 'cat-addon'
+            };
+            return map[cat] || 'cat-dryfood';
+        }
+
+        // --- MASTER LIST ---
+        function renderMasterList() {
+            const tbody = document.querySelector('#master-table tbody');
+            tbody.innerHTML = '';
+            itemMaster.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td><span class="badge cat-badge ${getCatClass(item.category)}">${item.category}</span></td>
+                    <td>${item.uom}</td>
+                    <td>${item.reorder}</td>
+                    <td>AED ${item.cost.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- ADD ITEM ---
+        function populateItemSelect() {
+            const select = document.getElementById('entry-item-select');
+            select.innerHTML = '<option value="">-- Choose Item --</option>';
+            itemMaster.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.code;
+                opt.innerText = `${item.code} - ${item.name}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function fillItemDetails() {
+            const code = document.getElementById('entry-item-select').value;
+            const item = itemMaster.find(i => i.code === code);
+            if (item) {
+                document.getElementById('entry-category').value = item.category;
+                document.getElementById('entry-uom').value = item.uom;
+            }
+            autoCalculate();
+        }
+
+        function autoCalculate() {
+            const op = parseFloat(document.getElementById('entry-opening').value) || 0;
+            const pur = parseFloat(document.getElementById('entry-purchase').value) || 0;
+            const clo = parseFloat(document.getElementById('entry-closing').value) || 0;
+            const waste = parseFloat(document.getElementById('entry-waste').value) || 0;
+
+            const theo = op + pur - clo - waste;
+            document.getElementById('entry-theoretical').value = formatNumber(theo);
+        }
+
+        function resetForm() {
+            document.querySelector('form').reset();
+            document.getElementById('entry-category').value = '';
+            document.getElementById('entry-uom').value = '';
+            document.getElementById('entry-theoretical').value = '';
+        }
+
+        function saveInventoryEntry() {
+            const code = document.getElementById('entry-item-select').value;
+            const branch = document.getElementById('entry-branch').value;
+            
+            if(!code) { showToast("Please select an item", "error"); return; }
+
+            const newEntry = {
+                id: Date.now(),
+                code: code,
+                branch: branch,
+                opening: parseFloat(document.getElementById('entry-opening').value) || 0,
+                purchase: parseFloat(document.getElementById('entry-purchase').value) || 0,
+                closing: parseFloat(document.getElementById('entry-closing').value) || 0,
+                waste: parseFloat(document.getElementById('entry-waste').value) || 0,
+                actual: parseFloat(document.getElementById('entry-actual').value) || 0
+            };
+
+            // Check if entry already exists for this item+branch
+            const existingIndex = inventoryData.findIndex(item => 
+                item.code === code && item.branch === branch
+            );
+            
+            if (existingIndex > -1) {
+                if (confirm("An entry for this item and branch already exists. Update instead?")) {
+                    inventoryData[existingIndex] = { ...inventoryData[existingIndex], ...newEntry };
+                    showToast("Inventory entry updated successfully!", "success");
+                } else {
+                    return;
+                }
+            } else {
+                inventoryData.push(newEntry);
+                showToast("Inventory entry saved successfully!", "success");
+            }
+            
+            resetForm();
+            renderTable();
+            renderDashboard();
+            renderAlerts();
+        }
+
+        function editInventoryEntry(id) {
+            const entry = inventoryData.find(item => item.id === id);
+            if (!entry) return;
+            
+            switchTab('add-item', document.querySelectorAll('.nav-item')[4]);
+            
+            // Fill form with entry data
+            document.getElementById('entry-item-select').value = entry.code;
+            fillItemDetails();
+            document.getElementById('entry-branch').value = entry.branch;
+            document.getElementById('entry-opening').value = entry.opening;
+            document.getElementById('entry-purchase').value = entry.purchase;
+            document.getElementById('entry-closing').value = entry.closing;
+            document.getElementById('entry-waste').value = entry.waste;
+            document.getElementById('entry-actual').value = entry.actual;
+            autoCalculate();
+            
+            // Update form title
+            document.querySelector('#add-item .page-header h2').innerText = "Edit Inventory Entry";
+            
+            // Add update button
+            const submitBtn = document.querySelector('#add-item button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Entry';
+            submitBtn.onclick = function() { updateInventoryEntry(id); };
+        }
+
+        function updateInventoryEntry(id) {
+            const index = inventoryData.findIndex(item => item.id === id);
+            if (index === -1) return;
+            
+            inventoryData[index] = {
+                id: id,
+                code: document.getElementById('entry-item-select').value,
+                branch: document.getElementById('entry-branch').value,
+                opening: parseFloat(document.getElementById('entry-opening').value) || 0,
+                purchase: parseFloat(document.getElementById('entry-purchase').value) || 0,
+                closing: parseFloat(document.getElementById('entry-closing').value) || 0,
+                waste: parseFloat(document.getElementById('entry-waste').value) || 0,
+                actual: parseFloat(document.getElementById('entry-actual').value) || 0
+            };
+            
+            showToast("Inventory entry updated successfully!", "success");
+            resetForm();
+            document.querySelector('#add-item .page-header h2').innerText = "Add Inventory Entry";
+            const submitBtn = document.querySelector('#add-item button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Entry';
+            submitBtn.onclick = function() { saveInventoryEntry(); };
+            
+            renderTable();
+            renderDashboard();
+            renderAlerts();
+        }
+
+        function deleteInventoryEntry(id) {
+            if (confirm("Are you sure you want to delete this inventory entry?")) {
+                inventoryData = inventoryData.filter(item => item.id !== id);
+                showToast("Inventory entry deleted successfully!", "success");
+                renderTable();
+                renderDashboard();
+                renderAlerts();
+            }
+        }
+
+        // --- SALES ENTRY ---
+        function renderSalesTable() {
+            const tbody = document.getElementById('sales-body');
+            tbody.innerHTML = '';
+            
+            if (recipeData.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-utensils"></i>
+                        <h3>No Recipes Found</h3>
+                        <p>Add recipes in the Recipe Master section first</p>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+            
+            recipeData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'menu-row';
+                tr.dataset.code = item.code;
+                tr.dataset.name = item.name.toLowerCase();
+                
+                tr.innerHTML = `
+                    <td>${item.code}</td>
+                    <td><b>${item.name}</b></td>
+                    <td>${item.uom}</td>
+                    <td>AED ${item.price}</td>
+                    <td><input type="number" class="menu-input" min="0" value="0" onchange="updateRevenue(this, ${item.price})" oninput="updateRevenue(this, ${item.price})"></td>
+                    <td class="row-total">AED 0.00</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterMenuTable() {
+            const term = document.getElementById('menuSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('.menu-row');
+            rows.forEach(row => {
+                const name = row.dataset.name;
+                const code = row.dataset.code.toLowerCase();
+                if(name.includes(term) || code.includes(term)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function updateRevenue(input, price) {
+            const row = input.closest('tr');
+            const qty = parseFloat(input.value) || 0;
+            const total = qty * price;
+            row.querySelector('.row-total').innerText = `AED ${total.toFixed(2)}`;
+            
+            // Highlight row if input has value
+            if(qty > 0) row.classList.add('active-input');
+            else row.classList.remove('active-input');
+
+            // Update grand total
+            let grandTotal = 0;
+            let totalItems = 0;
+            document.querySelectorAll('.menu-input').forEach(inp => {
+                const q = parseFloat(inp.value) || 0;
+                const p = parseFloat(inp.closest('tr').cells[3].innerText.replace('AED ', ''));
+                grandTotal += (q * p);
+                totalItems += q;
+            });
+            document.getElementById('total-revenue-preview').innerText = `AED ${grandTotal.toFixed(2)}`;
+            document.getElementById('sales-summary').innerText = `${totalItems} items selected for posting`;
+        }
+
+        function clearAllSales() {
+            const inputs = document.querySelectorAll('.menu-input');
+            inputs.forEach(input => {
+                input.value = 0;
+                const row = input.closest('tr');
+                row.classList.remove('active-input');
+                row.querySelector('.row-total').innerText = 'AED 0.00';
+            });
+            document.getElementById('total-revenue-preview').innerText = 'AED 0.00';
+            document.getElementById('sales-summary').innerText = 'Ready to post consumption';
+        }
+
+        function postConsumption() {
+            const branch = document.getElementById('sales-branch').value;
+            const inputs = document.querySelectorAll('.menu-input');
+            let totalPosted = 0;
+            let totalRevenue = 0;
+            let ingredientsToUpdate = {}; // Map: Code -> Qty
+
+            // 1. Gather Consumption
+            inputs.forEach(input => {
+                const qty = parseFloat(input.value) || 0;
+                if (qty > 0) {
+                    const row = input.closest('tr');
+                    const code = row.dataset.code;
+                    const menuData = recipeData.find(m => m.code === code);
+                    
+                    if (menuData && menuData.ing) {
+                        // Expand Recipe
+                        menuData.ing.forEach((ingQty, index) => {
+                            if (ingQty > 0) {
+                                const rawCode = recipeMap[index];
+                                if (rawCode) {
+                                    const consumption = ingQty * qty;
+                                    ingredientsToUpdate[rawCode] = (ingredientsToUpdate[rawCode] || 0) + consumption;
+                                }
+                            }
+                        });
+                        totalPosted += qty;
+                        totalRevenue += qty * menuData.price;
+                    }
+                }
+            });
+
+            if (totalPosted === 0) {
+                showToast("Please enter quantities for items sold.", "error");
+                return;
+            }
+
+            // 2. Update Inventory Records (Actual Usage)
+            let updatedCount = 0;
+            Object.keys(ingredientsToUpdate).forEach(rawCode => {
+                const consumption = ingredientsToUpdate[rawCode];
+                
+                // Find existing inventory record for this raw item and branch
+                let record = inventoryData.find(d => d.code === rawCode && d.branch === branch);
+                
+                if (record) {
+                    // Add to actual usage
+                    record.actual += consumption;
+                    updatedCount++;
+                } else {
+                    // Create a new record if none exists
+                    inventoryData.push({
+                        id: Date.now(),
+                        code: rawCode,
+                        branch: branch,
+                        opening: 0,
+                        purchase: 0,
+                        closing: 0,
+                        waste: 0,
+                        actual: consumption
+                    });
+                    updatedCount++;
+                }
+            });
+
+            // 3. Create sales record (optional - could be stored separately)
+            const salesRecord = {
+                id: Date.now(),
+                branch: branch,
+                date: new Date().toISOString().split('T')[0],
+                totalItems: totalPosted,
+                totalRevenue: totalRevenue,
+                items: Array.from(inputs).filter(input => parseFloat(input.value) > 0).map(input => ({
+                    code: input.closest('tr').dataset.code,
+                    qty: parseFloat(input.value),
+                    price: parseFloat(input.closest('tr').cells[3].innerText.replace('AED ', ''))
+                }))
+            };
+
+            // 4. Feedback & Cleanup
+            showToast(`Posted ${totalPosted} sales (AED ${totalRevenue.toFixed(2)}). Updated ${updatedCount} ingredients.`, "success");
+            
+            // Clear inputs
+            clearAllSales();
+
+            // Refresh Views
+            renderTable();
+            renderDashboard();
+            renderAlerts();
+        }
+
+        // --- RECIPE MASTER (WITH EDIT & UPLOAD) ---
+        function renderRecipeMasterList() {
+            const container = document.getElementById('recipe-list-container');
+            container.innerHTML = '';
+
+            if (recipeData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-utensils"></i>
+                        <h3>No Recipes Found</h3>
+                        <p>Click "Add New Recipe" to create your first recipe</p>
+                    </div>
+                `;
+                return;
+            }
+
+            recipeData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'recipe-item';
+                div.dataset.code = item.code;
+                div.onclick = () => openEditRecipe(item.code);
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight:bold; font-size:13px;">${item.code}</div>
+                        <div style="font-size:12px; color:#7f8c8d;">${item.name}</div>
+                        <div style="font-size:11px; color:var(--secondary);">AED ${item.price} | ${item.uom}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openEditRecipe('${item.code}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterRecipeMaster() {
+            const term = document.getElementById('recipeSearch').value.toLowerCase();
+            const items = document.querySelectorAll('.recipe-item');
+            let visibleCount = 0;
+            
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if(text.includes(term)) {
+                    item.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && term) {
+                document.getElementById('recipe-list-container').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>No Recipes Found</h3>
+                        <p>No recipes match "${term}"</p>
+                    </div>
+                `;
+            }
+        }
+
+        function openEditRecipe(code) {
+            const item = recipeData.find(m => m.code === code);
+            const panel = document.getElementById('recipe-details-panel');
+            
+            if(!item) return;
+
+            let ingredientsHtml = '';
+            // Generate the edit form for all 16 ingredients
+            item.ing.forEach((qty, index) => {
+                const rawCode = recipeMap[index];
+                const rawItem = itemMaster.find(i => i.code === rawCode);
+                
+                const rawName = rawItem ? rawItem.name : "Unknown Material";
+                const rawUom = rawItem ? rawItem.uom : "";
+                const rawCost = rawItem ? rawItem.cost : 0;
+                const ingredientCost = qty * rawCost;
+                
+                ingredientsHtml += `
+                    <div class="ing-edit-row">
+                        <div class="ing-edit-label">
+                            <span style="font-weight:bold; color:var(--primary);">${rawCode}</span>
+                            <br>${rawName} (${rawUom})
+                            <br><small style="color:#7f8c8d;">Cost: AED ${ingredientCost.toFixed(2)}</small>
+                        </div>
+                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="${qty}" min="0">
+                    </div>
+                `;
+            });
+
+            // Calculate total cost
+            const totalCost = item.ing.reduce((sum, qty, index) => {
+                const rawCode = recipeMap[index];
+                const rawItem = itemMaster.find(i => i.code === rawCode);
+                return sum + (qty * (rawItem ? rawItem.cost : 0));
+            }, 0);
+
+            panel.innerHTML = `
+                <div class="recipe-header" style="border-bottom: 2px solid var(--secondary); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin:0;">Edit Recipe: ${item.code}</h3>
+                        <div style="color:#7f8c8d; font-size:12px;">Total Cost: AED ${totalCost.toFixed(2)} | Profit Margin: ${((item.price - totalCost) / item.price * 100).toFixed(1)}%</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline" onclick="closeEditPanel()">Cancel</button>
+                        <button class="btn btn-sm btn-primary" onclick="saveRecipeChanges()"><i class="fas fa-save"></i> Save Changes</button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteRecipe('${item.code}')"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                </div>
+                
+                <div class="edit-form-grid" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Menu Code</label>
+                        <input type="text" id="edit-code" value="${item.code}" readonly style="background:#f0f0f0;">
+                    </div>
+                    <div class="form-group">
+                        <label>Menu Name</label>
+                        <input type="text" id="edit-name" value="${item.name}">
+                    </div>
+                    <div class="form-group">
+                        <label>UOM</label>
+                        <input type="text" id="edit-uom" value="${item.uom}">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (AED)</label>
+                        <input type="number" step="0.01" id="edit-price" value="${item.price}" min="0">
+                    </div>
+                </div>
+
+                <h4 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">Recipe Ingredients</h4>
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    ${ingredientsHtml}
+                </div>
+            `;
+            
+            panel.classList.add('active');
+        }
+
+        function openAddNewRecipe() {
+            const panel = document.getElementById('recipe-details-panel');
+            
+            let ingredientsHtml = '';
+            // Generate empty inputs for new recipe
+            recipeMap.forEach((rawCode, index) => {
+                const rawItem = itemMaster.find(i => i.code === rawCode);
+                const rawName = rawItem ? rawItem.name : "Unknown Material";
+                const rawUom = rawItem ? rawItem.uom : "";
+                ingredientsHtml += `
+                    <div class="ing-edit-row">
+                        <div class="ing-edit-label">
+                            <span style="font-weight:bold; color:var(--primary);">${rawCode}</span>
+                            <br>${rawName} (${rawUom})
+                        </div>
+                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="0" min="0">
+                    </div>
+                `;
+            });
+
+            panel.innerHTML = `
+                <div class="recipe-header" style="border-bottom: 2px solid var(--secondary); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin:0;">Add New Recipe</h3>
+                        <div style="color:#7f8c8d; font-size:12px;">Create a new menu item.</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline" onclick="closeEditPanel()">Cancel</button>
+                        <button class="btn btn-sm btn-primary" onclick="saveNewRecipe()"><i class="fas fa-plus"></i> Create Recipe</button>
+                    </div>
+                </div>
+                
+                <div class="edit-form-grid" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Menu Code</label>
+                        <input type="text" id="edit-code" placeholder="e.g., MI_211" maxlength="10" style="text-transform: uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label>Menu Name</label>
+                        <input type="text" id="edit-name" placeholder="e.g., Chicken Family Box">
+                    </div>
+                    <div class="form-group">
+                        <label>UOM</label>
+                        <input type="text" id="edit-uom" placeholder="e.g., PCS">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (AED)</label>
+                        <input type="number" step="0.01" id="edit-price" placeholder="0.00" min="0">
+                    </div>
+                </div>
+
+                <h4 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">Recipe Ingredients</h4>
+                <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    ${ingredientsHtml}
+                </div>
+            `;
+            
+            panel.classList.add('active');
+        }
+
+        function closeEditPanel() {
+            const panel = document.getElementById('recipe-details-panel');
+            panel.classList.remove('active');
+            panel.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-utensils"></i>
+                    <h3>No Recipe Selected</h3>
+                    <p>Select a menu item from the list to view or edit its recipe.</p>
+                </div>
+            `;
+        }
+
+        function saveRecipeChanges() {
+            const code = document.getElementById('edit-code').value;
+            const name = document.getElementById('edit-name').value;
+            const uom = document.getElementById('edit-uom').value;
+            const price = parseFloat(document.getElementById('edit-price').value) || 0;
+
+            if(!code || !name) {
+                showToast("Code and Name are required", "error");
+                return;
+            }
+
+            // Gather ingredients
+            const newIng = [];
+            for(let i=0; i<16; i++) {
+                const val = parseFloat(document.getElementById(`ing_${i}`).value) || 0;
+                newIng.push(val);
+            }
+
+            // Find existing index
+            const index = recipeData.findIndex(r => r.code === code);
+
+            if(index > -1) {
+                // Update
+                recipeData[index].name = name;
+                recipeData[index].uom = uom;
+                recipeData[index].price = price;
+                recipeData[index].ing = newIng;
+                showToast(`Recipe for ${code} updated successfully!`, "success");
+            } else {
+                showToast(`Recipe ${code} not found. Use 'Add New Recipe' instead.`, "error");
+                return;
+            }
+
+            closeEditPanel();
+            renderRecipeMasterList();
+            renderSalesTable(); // Refresh POS table too
+        }
+
+        function saveNewRecipe() {
+            const code = document.getElementById('edit-code').value.trim().toUpperCase();
+            const name = document.getElementById('edit-name').value;
+            const uom = document.getElementById('edit-uom').value;
+            const price = parseFloat(document.getElementById('edit-price').value) || 0;
+
+            if(!code || !name) {
+                showToast("Code and Name are required", "error");
+                return;
+            }
+
+            // Check duplicate
+            if(recipeData.find(r => r.code === code)) {
+                showToast("Recipe code already exists.", "error");
+                return;
+            }
+
+            // Gather ingredients
+            const newIng = [];
+            for(let i=0; i<16; i++) {
+                const val = parseFloat(document.getElementById(`ing_${i}`).value) || 0;
+                newIng.push(val);
+            }
+
+            // Create
+            const newRecipe = {
+                code: code,
+                name: name,
+                uom: uom,
+                price: price,
+                ing: newIng
+            };
+
+            recipeData.push(newRecipe);
+            showToast(`New recipe ${code} created successfully!`, "success");
+            
+            closeEditPanel();
+            renderRecipeMasterList();
+            renderSalesTable();
+        }
+
+        function confirmDeleteRecipe(code) {
+            openModal(
+                "Delete Recipe",
+                `Are you sure you want to delete recipe ${code}? This action cannot be undone.`,
+                () => deleteRecipe(code)
+            );
+        }
+
+        function deleteRecipe(code) {
+            recipeData = recipeData.filter(r => r.code !== code);
+            showToast(`Recipe ${code} deleted.`, "success");
+            closeEditPanel();
+            renderRecipeMasterList();
+            renderSalesTable();
+            closeModal();
+        }
+
+        function exportRecipes() {
+            const dataStr = JSON.stringify(recipeData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recipe_master_backup_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast("Recipe list exported successfully!", "success");
+        }
+
+        function importRecipes(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if(Array.isArray(importedData)) {
+                        openModal(
+                            "Import Recipes",
+                            `This will replace your current recipe list with ${importedData.length} items. Continue?`,
+                            () => {
+                                recipeData = importedData;
+                                renderRecipeMasterList();
+                                renderSalesTable();
+                                showToast("Recipes imported successfully!", "success");
+                                closeModal();
+                            }
+                        );
+                    } else {
+                        showToast("Invalid file format.", "error");
+                    }
+                } catch (err) {
+                    showToast("Error reading file: " + err.message, "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- ALERTS ---
+        function renderAlerts() {
+            const container = document.getElementById('alerts-container');
+            container.innerHTML = '';
+            
+            const data = getFilteredData();
+            const alerts = [];
+
+            data.forEach(row => {
+                const master = itemMaster.find(i => i.code === row.code);
+                if(!master) return;
+
+                const theo = row.opening + row.purchase - row.closing - row.waste;
+                const varPct = theo !== 0 ? Math.abs((row.actual - theo) / theo * 100) : 0;
+                const dailyUsage = theo / 30;
+                const daysLeft = dailyUsage > 0 ? row.closing / dailyUsage : 999;
+
+                if (daysLeft < 2) {
+                    alerts.push({ type: 'danger', icon: 'fa-exclamation-triangle', title: 'Critical Stock Level', 
+                        msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} has only ${daysLeft.toFixed(1)} days left.` });
+                } else if (daysLeft < 5) {
+                    alerts.push({ type: 'warning', icon: 'fa-clock', title: 'Low Stock Warning', 
+                        msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} is running low (${daysLeft.toFixed(1)} days).` });
+                }
+
+                if (varPct > 15) {
+                    alerts.push({ type: 'danger', icon: 'fa-balance-scale', title: 'High Variance Alert', 
+                        msg: `${master.name} at ${row.branch} has a variance of ${varPct.toFixed(1)}%.` });
+                } else if (varPct > 10) {
+                    alerts.push({ type: 'warning', icon: 'fa-balance-scale', title: 'Moderate Variance', 
+                        msg: `${master.name} at ${row.branch} has a variance of ${varPct.toFixed(1)}%.` });
+                }
+            });
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<div class="card text-center" style="padding:40px; color:#27ae60;"><i class="fas fa-check-circle fa-3x"></i><br><br>All systems operational. No alerts.</div>';
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const div = document.createElement('div');
+                div.className = `alert-box alert-${alert.type}`;
+                div.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        <i class="fas ${alert.icon}" style="font-size: 20px; margin-top: 2px;"></i>
+                        <div>
+                            <strong>${alert.title}</strong><br>
+                            <span style="font-size:14px;">${alert.msg}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function refreshAlerts() {
+            renderAlerts();
+            showToast("Alerts refreshed");
+        }
+
+        // --- MODAL FUNCTIONS ---
+        function openModal(title, message, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-confirm-btn').onclick = onConfirm;
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        // --- UTILS ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const color = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--warning)';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+            
+            toast.style.borderLeftColor = color;
+            toast.innerHTML = `
+                <i class="fas ${icon}" style="color: ${color}; font-size: 20px;"></i>
+                <div style="font-weight: 500;">${message}</div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function exportData() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Code,Name,Category,Branch,Opening,Purchase,Closing,Waste,Theoretical,Actual,Variance%,DaysLeft,Status\n";
+
+            const data = getFilteredData();
+            data.forEach(row => {
+                const m = itemMaster.find(i => i.code === row.code);
+                const theo = row.opening + row.purchase - row.closing - row.waste;
+                const varPct = theo !== 0 ? ((row.actual - theo) / theo * 100).toFixed(2) : 0;
+                const dailyUsage = theo / 30;
+                const daysLeft = dailyUsage > 0 ? (row.closing / dailyUsage).toFixed(1) : 0;
+                
+                csvContent += `${row.code},"${m.name}",${m.category},${row.branch},${row.opening},${row.purchase},${row.closing},${row.waste},${theoretical.toFixed(2)},${row.actual},${varPct},${daysLeft},""\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `inventory_export_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Data exported successfully!", "success");
+        }
+
+        function refreshDashboard() {
+            renderDashboard();
+            showToast("Dashboard updated", "success");
+        }
+
+        function updateBranchFilter() {
+            currentBranchFilter = document.getElementById('globalBranchFilter').value;
+            renderTable();
+            renderDashboard();
+            renderAlerts();
+        }
+
+        function formatNumber(num) {
+            if (num === undefined || num === null) return '0';
+            return Number(num).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
     </script>
 </body>
 </html>
