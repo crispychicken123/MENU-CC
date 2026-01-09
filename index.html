@@ -65,7 +65,6 @@
             font-size: 14px;
             background: var(--light);
             cursor: pointer;
-            min-width: 180px;
         }
 
         /* --- Navigation --- */
@@ -102,8 +101,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
         }
         .page-header h2 { color: var(--primary); }
 
@@ -186,8 +183,6 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--dark); }
         .btn-outline:hover { background: var(--light); border-color: #bdc3c7; }
         .btn-sm { padding: 5px 10px; font-size: 12px; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { background: #a93226; }
 
         .search-box {
             position: relative;
@@ -265,7 +260,6 @@
             border-left: 4px solid var(--secondary);
             animation: slideIn 0.3s ease;
             min-width: 300px;
-            max-width: 400px;
         }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
@@ -350,89 +344,6 @@
         .ing-edit-label { font-size: 12px; color: #7f8c8d; }
         .ing-edit-input { width: 100%; padding: 5px; border: 1px solid var(--border); border-radius: 4px; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .recipe-layout {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
-            .recipe-list {
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                padding-right: 0;
-                padding-bottom: 20px;
-                max-height: 300px;
-            }
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-controls {
-                flex-wrap: wrap;
-            }
-            .brand h1 {
-                font-size: 20px;
-            }
-            .nav-tabs {
-                font-size: 12px;
-            }
-            .nav-item {
-                padding: 12px 15px;
-            }
-        }
-
-        /* Loading Spinner */
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--secondary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #95a5a6;
-        }
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        /* Confirmation Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
@@ -448,7 +359,7 @@
         </div>
         <div class="header-controls">
             <div class="date-display" id="currentDate"></div>
-            <select class="branch-select" id="globalBranchFilter" onchange="updateBranchFilter()">
+            <select class="branch-select" id="globalBranchFilter">
                 <option value="ALL">All 9 Branches</option>
                 <option value="BR-01">BR-01 - Hamdan St</option>
                 <option value="BR-02">BR-02 - Mussafah</option>
@@ -544,7 +455,6 @@
         <section id="inventory" class="section">
             <div class="page-header">
                 <h2>Inventory Data</h2>
-                <div style="font-size: 14px; color: #7f8c8d;" id="inventory-count">0 items</div>
             </div>
 
             <div class="controls">
@@ -585,7 +495,6 @@
                             <th class="text-right">Var. %</th>
                             <th class="text-right">Days Left</th>
                             <th>Status</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-body">
@@ -599,11 +508,10 @@
         <section id="sales-entry" class="section">
             <div class="page-header">
                 <h2>POS Sales Entry & Recipe Expansion</h2>
-                <div class="form-hint" id="sales-summary">Ready to post consumption</div>
             </div>
 
-            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 250px;">
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 20px; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="flex: 1;">
                     <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">Select Branch for Posting</label>
                     <select id="sales-branch" class="menu-branch-select" style="width: 100%; padding: 10px;">
                         <option value="BR-01">BR-01 - Hamdan St</option>
@@ -617,7 +525,7 @@
                         <option value="BR-09">BR-09 - Al Majaz</option>
                     </select>
                 </div>
-                <div style="flex: 1; min-width: 250px;">
+                <div style="flex: 1;">
                     <button class="btn btn-success" style="width: 100%; justify-content: center;" onclick="postConsumption()">
                         <i class="fas fa-calculator"></i> Post Consumption to Inventory
                     </button>
@@ -631,7 +539,6 @@
                     <input type="text" id="menuSearch" placeholder="Search menu items..." onkeyup="filterMenuTable()">
                 </div>
                 <div class="kpi-title" style="color: var(--secondary);">Total Revenue: <span id="total-revenue-preview">AED 0.00</span></div>
-                <button class="btn btn-outline btn-sm" onclick="clearAllSales()"><i class="fas fa-times"></i> Clear All</button>
             </div>
 
             <div class="table-container">
@@ -671,7 +578,6 @@
                         <i class="fas fa-search"></i>
                         <input type="text" id="recipeSearch" placeholder="Search menu items..." onkeyup="filterRecipeMaster()">
                     </div>
-                    <div style="font-size: 14px; color: #7f8c8d;" id="recipe-count">${recipeData.length} recipes</div>
                 </div>
                 
                 <div class="recipe-layout">
@@ -683,9 +589,8 @@
                     <!-- Right Column: Selected Recipe Details OR Edit Form -->
                     <div id="recipe-details-panel" class="recipe-details">
                         <!-- Default state -->
-                        <div class="empty-state">
-                            <i class="fas fa-utensils"></i>
-                            <h3>No Recipe Selected</h3>
+                        <div style="text-align: center; padding-top: 50px; color: #95a5a6;">
+                            <i class="fas fa-arrow-left fa-2x"></i>
                             <p>Select a menu item from the list to view or edit its recipe.</p>
                         </div>
                     </div>
@@ -703,7 +608,7 @@
                 <!-- Item Selection -->
                 <div class="form-group">
                     <label>Select Item from Master</label>
-                    <select id="entry-item-select" onchange="fillItemDetails()" required>
+                    <select id="entry-item-select" onchange="fillItemDetails()">
                         <option value="">-- Choose Item --</option>
                     </select>
                 </div>
@@ -735,19 +640,19 @@
                 <!-- Numerical Inputs -->
                 <div class="form-group">
                     <label>Opening Stock</label>
-                    <input type="number" step="0.01" id="entry-opening" required min="0">
+                    <input type="number" step="0.01" id="entry-opening" required>
                 </div>
                 <div class="form-group">
                     <label>Purchases</label>
-                    <input type="number" step="0.01" id="entry-purchase" required min="0">
+                    <input type="number" step="0.01" id="entry-purchase" required>
                 </div>
                 <div class="form-group">
                     <label>Closing Stock (Current)</label>
-                    <input type="number" step="0.01" id="entry-closing" required min="0" onchange="autoCalculate()">
+                    <input type="number" step="0.01" id="entry-closing" required onchange="autoCalculate()">
                 </div>
                 <div class="form-group">
                     <label>Waste</label>
-                    <input type="number" step="0.01" id="entry-waste" value="0" min="0" onchange="autoCalculate()">
+                    <input type="number" step="0.01" id="entry-waste" value="0" onchange="autoCalculate()">
                 </div>
                 
                 <!-- Calculations Display -->
@@ -757,12 +662,12 @@
                 </div>
                 <div class="form-group">
                     <label>Actual Usage (Physical)</label>
-                    <input type="number" step="0.01" id="entry-actual" required min="0">
+                    <input type="number" step="0.01" id="entry-actual" required>
                     <div class="form-hint">Count from POS or physical check</div>
                 </div>
 
                 <div class="form-group" style="grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
-                    <button type="button" class="btn btn-outline" onclick="resetForm()">Clear</button>
+                    <button type="button" class="btn btn-outline" onclick="document.querySelector('form').reset()">Clear</button>
                     <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Entry</button>
                 </div>
             </form>
@@ -772,7 +677,7 @@
         <section id="item-master" class="section">
             <div class="page-header">
                 <h2>Item Master List</h2>
-                <span class="badge cat-chicken">Total ${itemMaster.length} Items</span>
+                <span class="badge cat-chicken">Total 34 Items</span>
             </div>
             <div class="table-container">
                 <table id="master-table">
@@ -797,7 +702,6 @@
         <section id="alerts" class="section">
             <div class="page-header">
                 <h2>Alerts & Notifications</h2>
-                <button class="btn btn-outline btn-sm" onclick="refreshAlerts()"><i class="fas fa-sync"></i> Refresh</button>
             </div>
             <div id="alerts-container">
                 <!-- Populated by JS -->
@@ -809,45 +713,240 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- Modal for Confirmations -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div class="modal">
-            <h3 id="modal-title">Confirm Action</h3>
-            <p id="modal-message">Are you sure you want to perform this action?</p>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-danger" id="modal-confirm-btn">Confirm</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // --- RAW DATA (Now a variable 'recipeData' to allow edits) ---
         let recipeData = [
             {code:"MI_01", name:"12 PCS PACKET MIX", uom:"12", price:53, ing:[12,0,5,3,3,0,0,0,3,0,0,3,0,0,0,0]},
             {code:"MI_02", name:"16 PCS PACKET MIX", uom:"PCS", price:70, ing:[16,0,5,4,0,1,0,0,4,0,0,4,0,0,0,0]},
-            // ... (rest of your recipeData remains the same)
+            {code:"MI_03", name:"20 PCS PACKET MIX", uom:"PCS", price:85, ing:[20,0,5,5,0,1,0,0,5,0,0,5,0,0,0,0]},
+            {code:"MI_04", name:"4 pcs chicken MIX Meal @ 5 AED", uom:"PCS", price:5, ing:[4,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_05", name:"BUCKET MEAL MIX", uom:"PCS", price:55, ing:[8,8,5,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_06", name:"CHICKEN DAY MIX", uom:"PCS", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_07", name:"CHICKEN DAY MIX Noon", uom:"PCS", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_08", name:"Daily MIX Meal", uom:"PCS", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_09", name:"Daily MIX Meal Noon", uom:"PCS", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_10", name:"DAILY OFFER MIX Meal", uom:"PCS", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_11", name:"DAILY OFFER MIX Meal Noon", uom:"PCS", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_12", name:"ECONMY MEAL-MIX", uom:"PCS", price:128, ing:[20,0,5,5,0,1,0,2,9,0,0,5,0.06,0,1,0]},
+            {code:"MI_13", name:"Golden 4 meal mix", uom:"PCS", price:10, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_14", name:"IDEAL MEAL MIX", uom:"PCS", price:69, ing:[12,0,5,3,3,0,0,1,3,0,0,3,0,0,0,0]},
+            {code:"MI_15", name:"MEGA MEAL MIX", uom:"PCS", price:105, ing:[20,0,5,5,0,1,0,2,5,0,0,5,0,0,0,0]},
+            {code:"MI_16", name:"PKT STRIPS 20 MIX", uom:"PCS", price:60, ing:[0,20,5,4,0,1,0,1,4,0,0,4,0,0,0,0]},
+            {code:"MI_17", name:"QUICK MIX", uom:"PCS", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_18", name:"SPICIAL FAMILY MIX", uom:"PCS", price:89, ing:[16,0,5,4,0,1,0,2,4,0,0,4,0,0,0,0]},
+            {code:"MI_19", name:"STRIPS FAMILY - MIX", uom:"PCS", price:79, ing:[0,20,5,4,0,1,0,1,4,0,0,5,0,0,0,0]},
+            {code:"MI_20", name:"SUPER MEAL - MIX", uom:"PCS", price:47, ing:[8,0,2,2,2,0,0,1,2,0,0,2,0,0,0,0]},
+            {code:"MI_21", name:"Ultimate M Careem Offers", uom:"PCS", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_22", name:"ULTIMATE MIX", uom:"PCS", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_23", name:"Ultimate M Noon Offers", uom:"PCS", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_24", name:"EXTRA CHEESE", uom:"PCS", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_25", name:"1/2 CHICKEN Original", uom:"PCS", price:24, ing:[4,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_26", name:"12 PCS PACKET Original", uom:"PCS", price:53, ing:[12,0,5,3,3,0,0,0,3,0,0,3,0,0,0,0]},
+            {code:"MI_27", name:"16 PCS PACKET Original", uom:"PCS", price:70, ing:[16,0,5,4,0,1,0,0,4,0,0,4,0,0,0,0]},
+            {code:"MI_28", name:"20 PCS PACKET Original", uom:"PCS", price:85, ing:[20,0,5,5,0,1,0,0,5,0,0,5,0,0,0,0]},
+            {code:"MI_29", name:"4 pcs chicken Original Meal @ 5", uom:"PCS", price:5, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_30", name:"BUCKET MEAL Original", uom:"PCS", price:55, ing:[8,8,5,2,0,0,0,1,0,0,0,0,3,0,0,0]},
+            {code:"MI_31", name:"CHICKEN DAY Original", uom:"PCS", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_32", name:"CHICKEN DAY Original Noon", uom:"PCS", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_33", name:"CHICKEN STRIPS Original", uom:"PCS", price:10, ing:[0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_34", name:"DAILY OFFER Original Mea", uom:"PCS", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_35", name:"DAILY OFFER Original Meal Noon", uom:"PCS", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_36", name:"Daily Original Meal", uom:"PCS", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_37", name:"Daily Original Meal Noon", uom:"PCS", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_38", name:"DEAL FOR ONE ( TWIST BOX ) Orig", uom:"PCS", price:17, ing:[2,2,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_39", name:"ECONMY MEAL Original", uom:"PCS", price:128, ing:[20,0,5,5,0,10,0,2,9,0,0,5,0.06,0,1,0]},
+            {code:"MI_40", name:"Golden 4 meal Normal", uom:"PCS", price:10, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_41", name:"IDEAL MEAL Original", uom:"PCS", price:69, ing:[12,0,5,3,3,0,0,1,3,0,0,3,0,0,0,0]},
+            {code:"MI_42", name:"MEGA MEAL Original", uom:"PCS", price:105, ing:[20,0,5,5,0,1,0,2,5,0,0,5,0,0,0,0]},
+            {code:"MI_43", name:"NORMAL PCS", uom:"PCS", price:5, ing:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_44", name:"Offersn Mix meal @ 9 AED", uom:"PCS", price:9, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_45", name:"Offers Original meal @ 9 AED", uom:"PCS", price:9, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_46", name:"Offers Spicy meal @ 9 AED", uom:"", price:9, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_47", name:"PKT STRIPS 20 Original", uom:"", price:60, ing:[0,20,5,4,0,1,0,0,4,0,0,5,0,0,0,0]},
+            {code:"MI_48", name:"QUICK NORMAL", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_49", name:"QUICK NORMAL Employees", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_50", name:"QUICK NORMAL Maintenanc", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_51", name:"SAVING MEAL Original", uom:"", price:24, ing:[3,0,1,1,1,0,1,0,1,0,0,2,0,0,0,0]},
+            {code:"MI_52", name:"SPICIAL FAMILY Original", uom:"", price:89, ing:[4,0,5,4,0,1,0,2,4,0,0,4,0,0,0,0]},
+            {code:"MI_53", name:"Steak Combo", uom:"", price:20, ing:[0,0,1,0,0,0,0,1,0,0,0,0,1,0,1,0]},
+            {code:"MI_54", name:"STRIPS FAMILY Original", uom:"", price:79, ing:[0,20,5,4,0,1,0,1,4,0,0,5,0,0,0,0]},
+            {code:"MI_55", name:"SUPER MEAL Original", uom:"", price:47, ing:[8,0,2,2,2,0,0,1,2,0,0,2,0,0,0,0]},
+            {code:"MI_56", name:"TWIST BOX Original", uom:"", price:17, ing:[2,2,1,1,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_57", name:"Ultimate O Careem Offers", uom:"", price:30, ing:[2,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_58", name:"Ultimate O Noon Offers", uom:"", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_59", name:"ULTIMATE Original", uom:"", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_60", name:"1/2 CHICKEN Spicy", uom:"", price:24, ing:[4,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_61", name:"12 PCS PACKET Spicy", uom:"", price:53, ing:[12,0,5,3,3,0,0,0,3,0,0,3,0,0,0,0]},
+            {code:"MI_62", name:"16 PCS PACKET Spicy", uom:"", price:70, ing:[16,0,5,4,0,1,0,0,4,0,0,4,0,0,0,0]},
+            {code:"MI_63", name:"20 PCS PACKET Spicy", uom:"", price:85, ing:[20,0,5,5,0,1,0,0,5,0,0,5,0,0,0,0]},
+            {code:"MI_64", name:"4 pcs chicken Spicy Meal@ 5 AED", uom:"", price:5, ing:[14,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_65", name:"BUCKET MEAL Spicy", uom:"", price:55, ing:[8,8,5,2,0,0,0,1,0,0,0,0,3,0,0,0]},
+            {code:"MI_66", name:"CHICKEN DAY SPICY", uom:"", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_67", name:"CHICKEN DAY SPICY Noon", uom:"", price:20, ing:[8,0,0,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_68", name:"Crispy Strips Spicy Meal", uom:"", price:22, ing:[0,5,1,1,0,0,0,0,1,0,0,0,2,0,0,0]},
+            {code:"MI_69", name:"DAILY OFFER Spicy Meal", uom:"", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_70", name:"DAILY OFFER Spicy Meal Noon", uom:"", price:33, ing:[8,0,2,2,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_71", name:"Daily Spicy Meal", uom:"", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_72", name:"Daily Spicy Meal Noon", uom:"", price:16, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_73", name:"DEAL FOR ONE ( TWIST BOX ) SPIC", uom:"", price:17, ing:[2,2,1,0,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_74", name:"ECONMY MEAL Spicy", uom:"", price:128, ing:[20,0,5,5,0,1,0,2,9,0,0,5,0.06,0,1,0]},
+            {code:"MI_75", name:"Golden 4 meal Spicy", uom:"", price:10, ing:[4,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0]},
+            {code:"MI_76", name:"IDEAL MEAL Spicy", uom:"", price:69, ing:[12,0,5,3,3,0,0,1,3,0,0,3,0,0,0,0]},
+            {code:"MI_77", name:"MEGA MEAL Spicy", uom:"", price:105, ing:[20,0,5,5,0,1,0,2,5,0,0,5,0,0,0,0]},
+            {code:"MI_78", name:"PKT STRIPS 20 Spicy", uom:"", price:60, ing:[0,20,5,4,0,1,0,0,4,0,0,5,0,0,0,0]},
+            {code:"MI_79", name:"QUICK SPICY", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_80", name:"QUICK Spicy Employees", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_81", name:"QUICK Spicy Maintenanc", uom:"", price:10, ing:[3,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0]},
+            {code:"MI_82", name:"Ramadan individual Spicy", uom:"", price:15, ing:[3,0,1,1,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_83", name:"SAVING MEAL Spicy", uom:"", price:24, ing:[4,0,1,1,1,0,1,0,1,0,0,2,0,0,0,0]},
+            {code:"MI_84", name:"SPICIAL FAMILY Spicy", uom:"", price:89, ing:[16,0,5,4,0,1,0,2,4,0,0,4,0,0,0,0]},
+            {code:"MI_85", name:"SPICY PCS", uom:"", price:5, ing:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_86", name:"STRIPS FAMILY Spicy", uom:"", price:79, ing:[0,20,5,4,0,1,0,1,4,0,0,5,0,0,0,0]},
+            {code:"MI_87", name:"SUPER MEAL Spicy", uom:"", price:47, ing:[8,0,2,2,2,0,0,1,2,0,0,2,0,0,0,0]},
+            {code:"MI_88", name:"TWIST BOX SPICY", uom:"", price:17, ing:[2,2,1,0,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_89", name:"Ultimate S Careem Offers", uom:"", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_90", name:"Ultimate S Noon Offers", uom:"", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_91", name:"ULTIMATE Spicy", uom:"", price:30, ing:[12,0,0,3,0,0,0,0,0,0,0,0,3,0,0,0]},
+            {code:"MI_92", name:"BEEF BURGER COMBO", uom:"", price:12, ing:[0,0,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_93", name:"BUFFALO MEAL", uom:"", price:15, ing:[0,20,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_94", name:"CHICKEN BUEGER COMBO", uom:"", price:12, ing:[0,0,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_95", name:"DYNAMITE OR COMBO", uom:"", price:13, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_96", name:"DYNAMITE SPY COMBO", uom:"", price:13, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_97", name:"FAJITA COMBO", uom:"", price:13, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_98", name:"FAJITA Spicy COMBO", uom:"", price:13, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_99", name:"MAXI CHICKEN DOUBLE COMB", uom:"", price:20, ing:[0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_100", name:"MAXI CHICKEN SINGLE COMB", uom:"", price:15, ing:[0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_101", name:"SUPER CRUNCHY OR COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_102", name:"SUPER CRUNCHY SP COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_103", name:"SUPREM OR COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_104", name:"SUPREM SP COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_105", name:"TORNADO OR COMBO", uom:"", price:14, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_106", name:"TORNADO SP COMBO", uom:"", price:14, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_107", name:"TWIN BEEF BURGER", uom:"", price:19, ing:[0,0,1,0,0,0,0,1,0,2,0,0,1,0.03,0,0]},
+            {code:"MI_108", name:"Twin Chicken Burger", uom:"", price:19, ing:[0,0,1,0,0,0,0,1,0,2,0,0,1,0.03,0,0]},
+            {code:"MI_109", name:"TWIN SHAWARMA MEAL", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_110", name:"Twin Supreme Meal", uom:"", price:18, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_111", name:"Twin SUPREM MIX", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_112", name:"Twin Suprem Spicy", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_113", name:"Twin Twist MIX", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_114", name:"Twin Twist MIX Noon", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_115", name:"Twin Twist Original", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_116", name:"Twin Twist Original Noon", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_117", name:"Twin Twist Spicy", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_118", name:"Twin Twist Spicy Noon", uom:"", price:18, ing:[0,4,1,0,0,0,0,1,0,0,0,0,1,0.03,0,0]},
+            {code:"MI_119", name:"TWIST OR COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_120", name:"TWIST SP COMBO", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_121", name:"TWIST SP COMBO employees", uom:"", price:12, ing:[0,2,1,0,0,0,0,1,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_122", name:"Volcano Combo Double", uom:"", price:22, ing:[0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_123", name:"Volcano Combo Single", uom:"", price:18, ing:[0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_124", name:"GO JUICE", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_125", name:"GO FAMILY KANZA .", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_126", name:"GO KANZA .", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_127", name:"Go Large", uom:"", price:4, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_128", name:"GO Shani.", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_129", name:"GO WATER.", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_130", name:"Upsize Large Fries And Large Pep", uom:"", price:4, ing:[0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_131", name:"KIDS MEAL CRISPY", uom:"", price:15, ing:[0,3,1,0,0,0,0,0,0,0,0,0,1,0,0,1]},
+            {code:"MI_132", name:"KIDS MEAL NUGGETS", uom:"", price:15, ing:[0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1]},
+            {code:"MI_133", name:"KIDS MEAL POP CORN", uom:"", price:15, ing:[0,0,1,0,0,0,0,0,0,14,0,0,1,0,0,1]},
+            {code:"MI_134", name:"BEEF BURGER SANDWICH", uom:"", price:7, ing:[0,0,0,0,0,0,0,0,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_135", name:"BUFFALO SANDWICH", uom:"", price:10, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_136", name:"CHICKEN BURGER SANDWICH", uom:"", price:7, ing:[0,0,0,0,0,0,0,0,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_137", name:"DYNAMITE Origina SANDW", uom:"", price:8, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_138", name:"DYNAMITE Origina SANDWICHES", uom:"", price:8, ing:[0,22,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_139", name:"FAJITA SANDWICHES", uom:"", price:8, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_140", name:"FAJITA Spicy SANDWICHES", uom:"", price:8, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_141", name:"MAX DOUBLE SANDWICH", uom:"", price:15, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_142", name:"MAX SINGLE SANDWICH", uom:"", price:10, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_143", name:"SHAWARMA Origina SANDWIC", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_144", name:"SHAWARMA Spicy SANDWICH", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_145", name:"Steak Sandwich", uom:"", price:15, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0]},
+            {code:"MI_146", name:"SUPER CRUNCHY OR SANDWIC", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_147", name:"SUPER CRUNCHY SP SANDWICHES", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_148", name:"SUPREME Origina SANDWIC", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_149", name:"SUPREME Spicy SANDWICH", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_150", name:"TORNADO Origina SANDWI", uom:"", price:9, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_151", name:"TORNADO Spicy SANDWICHE", uom:"", price:9, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_152", name:"TWIST Origina SANDWISHES", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_153", name:"TWIST Spicy SANDWISHES", uom:"", price:7, ing:[0,2,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_154", name:"Volcano Sandwich Double", uom:"", price:17, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_155", name:"Volcano Sandwich Single", uom:"", price:13, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0.015,0,0]},
+            {code:"MI_156", name:"6 PCS NUGGETS", uom:"", price:8, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_157", name:"Big Coleslaw", uom:"", price:7, ing:[0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_158", name:"BUN", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_159", name:"Cheese", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_160", name:"CHILI CHEESE NUGGETS", uom:"", price:10, ing:[0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_161", name:"CRISPY LARGE Original", uom:"", price:10, ing:[0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_162", name:"CRISPY LARGE Spicy", uom:"", price:10, ing:[0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_163", name:"CRISPY RICE", uom:"", price:10, ing:[0,2,0,0,0,0,0,0,0,0,0,1,1,0,0,0]},
+            {code:"MI_164", name:"CRISPY SMALL Original", uom:"", price:10, ing:[0,5,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_165", name:"CRISPY SMALL Spicy", uom:"", price:7, ing:[0,3,0,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_166", name:"DYNAMITE SAUCE", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_167", name:"FRENCH FRIES-BOX", uom:"", price:10, ing:[0,0,5,0,0,0,0,0,0,0,0,0,2,0,0,0]},
+            {code:"MI_168", name:"FRENCH FRIES- LARGE", uom:"", price:4, ing:[0,0,4,0,0,0,0,0,0,0,0,0,1,0,0,0]},
+            {code:"MI_169", name:"FRENCH FRIES SMALL", uom:"", price:2, ing:[0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_170", name:"GARLIC - SMALL", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_171", name:"GRAVEY SAUCE", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_172", name:"HOT CHEDAR CHEESE", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_173", name:"LARGE POP CORN", uom:"", price:14, ing:[0,0,0,0,0,0,0,0,28,0,0,1,0,0,0]},
+            {code:"MI_174", name:"Small Coleslaw", uom:"", price:3, ing:[0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_175", name:"SMALL POP CORN", uom:"", price:8, ing:[0,0,0,0,0,0,0,0,14,0,0,1,0,0,0]},
+            {code:"MI_176", name:"SPICED RICE", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]},
+            {code:"MI_177", name:"Spicy - FRIES", uom:"", price:1, ing:[0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0]},
+            {code:"MI_178", name:"WHITE RICE", uom:"", price:4, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_179", name:"Crispy Snack Original Me", uom:"", price:15, ing:[1,3,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_180", name:"Crispy Snack Spicy Meal", uom:"", price:15, ing:[1,3,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_181", name:"RICE MEAL Original", uom:"", price:15, ing:[2,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0]},
+            {code:"MI_182", name:"RICE MEAL Original employees", uom:"", price:15, ing:[2,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0]},
+            {code:"MI_183", name:"RICE MEAL Spicy", uom:"", price:15, ing:[2,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0]},
+            {code:"MI_184", name:"SNACK BOX Original", uom:"", price:15, ing:[2,0,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_185", name:"SNACK BOX Spicy", uom:"", price:15, ing:[2,0,1,0,0,0,0,1,0,1,0,0,1,0,0,0]},
+            {code:"MI_186", name:"SNACK SANDWICH Original", uom:"", price:15, ing:[1,2,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_187", name:"SNACK SANDWICH Spicy", uom:"", price:15, ing:[1,2,1,0,0,0,0,1,0,1,0,0,1,0.015,0,0]},
+            {code:"MI_188", name:"7UP M", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_189", name:"7UP S", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_190", name:"DIET PEPSI M", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_191", name:"DIET PEPSI S", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_192", name:"JUCE LAKNOR LARGE", uom:"", price:9, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_193", name:"KANZA", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_194", name:"LARGE 7 UP", uom:"", price:6, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_195", name:"LARGE DEW", uom:"", price:6, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_196", name:"LARGE MIRINDA", uom:"", price:6, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_197", name:"LARGE PEPSI", uom:"", price:6, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_198", name:"LITER 7UP", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]},
+            {code:"MI_199", name:"LITER MIRINDA", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]},
+            {code:"MI_200", name:"LITER Mountain Dew", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]},
+            {code:"MI_201", name:"LITER PEPSI", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0]},
+            {code:"MI_202", name:"M.WATER 500ML", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_203", name:"MIRINDA M", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_204", name:"MIRINDA S", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_205", name:"Mountain Dew M", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_206", name:"Mountain Dew S", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_207", name:"PEPSI M", uom:"", price:5, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_208", name:"PEPSI S", uom:"", price:2, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_209", name:"Shani Can", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+            {code:"MI_210", name:"SMALL JUICE", uom:"", price:3, ing:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
         ];
 
         // --- INGREDIENT MAP ---
-        const recipeMap = [
-            "R01", // CHIX (Whole)
-            "R02", // STRIP
-            "R07", // FRIES
-            "R09", // GARLIC SAUCE
-            "R10", // SMALL CLOWSLOW
-            "R11", // BIG CLOWSLOW
-            "R13", // BPESI PIP
-            "R14", // PEPSI LITER
-            "R19", // BUN 4.5 INCH
-            "R25", // POP CORN
-            "R27", // BASMATI RICE
-            "R32", // KETCHUP
-            "R30", // LETTUCE 1.5
-            "R34", // 100 g steak
-            "R15", // LARGE JUICE
-            "R24"  // SMALL JUICE
-        ];
+        const recipeMap = {
+            0: "R01", // CHIX (Whole)
+            1: "R02", // STRIP
+            2: "R07", // FRIES
+            3: "R09", // GARLIC SAUCE
+            4: "R10", // SMALL CLOWSLOW
+            5: "R11", // BIG CLOWSLOW
+            6: "R13", // BPESI PIP
+            7: "R14", // PEPSI LITER
+            8: "R19", // BUN 4.5 INCH
+            9: "R25", // POP CORN
+            10: "R27", // BASMATI RICE
+            11: "R32", // KETCHUP
+            12: "R30", // LETTUCE 1.5
+            13: "R34", // 100 g steak
+            14: "R15", // LARGE JUICE
+            15: "R24"  // SMALL JUICE
+        };
 
         // --- DATA ---
         const branches = [
@@ -865,7 +964,38 @@
         const itemMaster = [
             { code: "R01", name: "Chicken Whole", category: "Chicken", uom: "PCS", cost: 15.00, reorder: 50 },
             { code: "R02", name: "Chicken Strips", category: "Chicken", uom: "KG", cost: 18.00, reorder: 30 },
-            // ... (rest of your itemMaster remains the same)
+            { code: "R03", name: "Beef Burger 100g", category: "Frozen", uom: "PCS", cost: 8.00, reorder: 100 },
+            { code: "R04", name: "Beef Burger 125g", category: "Frozen", uom: "PCS", cost: 9.50, reorder: 100 },
+            { code: "R05", name: "Chicken Burger", category: "Frozen", uom: "PCS", cost: 7.00, reorder: 150 },
+            { code: "R06", name: "Zinger Fillet", category: "Frozen", uom: "PCS", cost: 9.00, reorder: 100 },
+            { code: "R07", name: "Fries", category: "Frozen", uom: "KG", cost: 5.00, reorder: 20 },
+            { code: "R08", name: "Cheddar Cheese", category: "Addon", uom: "PCS", cost: 1.50, reorder: 200 },
+            { code: "R09", name: "Garlic Sauce", category: "Sauce", uom: "L", cost: 25.00, reorder: 10 },
+            { code: "R10", name: "Coleslaw Small", category: "Salad", uom: "PCS", cost: 3.00, reorder: 50 },
+            { code: "R11", name: "Coleslaw Large", category: "Salad", uom: "PCS", cost: 5.00, reorder: 30 },
+            { code: "R12", name: "Dynamite Sauce", category: "Sauce", uom: "L", cost: 30.00, reorder: 10 },
+            { code: "R13", name: "Pepsi 330ml", category: "Beverage", uom: "PCS", cost: 1.50, reorder: 200 },
+            { code: "R14", name: "Pepsi 1L", category: "Beverage", uom: "PCS", cost: 2.50, reorder: 100 },
+            { code: "R15", name: "Orange Juice 500ml", category: "Beverage", uom: "PCS", cost: 3.00, reorder: 50 },
+            { code: "R16", name: "Water 500ml", category: "Beverage", uom: "PCS", cost: 0.50, reorder: 200 },
+            { code: "R17", name: "Burger Bun 4in", category: "Bakery", uom: "PCS", cost: 1.00, reorder: 300 },
+            { code: "R18", name: "Tortilla Wrap", category: "Bakery", uom: "PCS", cost: 1.50, reorder: 200 },
+            { code: "R19", name: "Burger Bun 4.5in", category: "Bakery", uom: "PCS", cost: 1.20, reorder: 300 },
+            { code: "R20", name: "Burger Bun 6in", category: "Bakery", uom: "PCS", cost: 1.50, reorder: 200 },
+            { code: "R21", name: "Semillon Bun 8in", category: "Bakery", uom: "PCS", cost: 2.00, reorder: 150 },
+            { code: "R22", name: "Burger Bun 5in", category: "Bakery", uom: "PCS", cost: 1.30, reorder: 250 },
+            { code: "R23", name: "Nuggets", category: "Frozen", uom: "PCS", cost: 1.00, reorder: 300 },
+            { code: "R24", name: "Apple Juice 250ml", category: "Beverage", uom: "PCS", cost: 2.50, reorder: 50 },
+            { code: "R25", name: "Popcorn Chicken", category: "Chicken", uom: "KG", cost: 25.00, reorder: 20 },
+            { code: "R26", name: "Shawarma Chicken", category: "Chicken", uom: "KG", cost: 22.00, reorder: 30 },
+            { code: "R27", name: "Basmati Rice", category: "Dry Food", uom: "KG", cost: 5.00, reorder: 50 },
+            { code: "R28", name: "Kinza Cola", category: "Beverage", uom: "PCS", cost: 1.20, reorder: 150 },
+            { code: "R29", name: "Flour (Breading)", category: "Dry Food", uom: "KG", cost: 4.00, reorder: 40 },
+            { code: "R30", name: "Lettuce", category: "Salad", uom: "KG", cost: 8.00, reorder: 10 },
+            { code: "R31", name: "Mayonnaise", category: "Sauce", uom: "L", cost: 20.00, reorder: 15 },
+            { code: "R32", name: "Ketchup", category: "Sauce", uom: "L", cost: 15.00, reorder: 10 },
+            { code: "R33", name: "Cooking Oil", category: "Dry Food", uom: "L", cost: 8.00, reorder: 20 },
+            { code: "R34", name: "Steak 100g", category: "Frozen", uom: "PCS", cost: 12.00, reorder: 80 }
         ];
 
         let inventoryData = [
@@ -885,9 +1015,16 @@
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
-            document.getElementById('currentDate').innerText = now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+            document.getElementById('currentDate').innerText = now.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
 
-            populateItemSelect();
+            const select = document.getElementById('entry-item-select');
+            itemMaster.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.code;
+                opt.innerText = `${item.code} - ${item.name}`;
+                select.appendChild(opt);
+            });
+
             renderMasterList();
             renderTable();
             renderDashboard();
@@ -904,7 +1041,6 @@
             navElement.classList.add('active');
 
             if(tabId === 'dashboard') refreshDashboard();
-            if(tabId === 'recipe-master') document.getElementById('recipe-count').innerText = `${recipeData.length} recipes`;
         }
 
         // --- DASHBOARD LOGIC ---
@@ -1012,20 +1148,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false }, 
-                        title: { display: true, text: 'Inventory Value by Category' } 
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return 'AED ' + value.toLocaleString();
-                                }
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Inventory Value by Category' } }
                 }
             });
 
@@ -1041,38 +1164,19 @@
             varianceChart = new Chart(ctx2, {
                 type: 'line',
                 data: {
-                    labels: varianceData.map(d => d.name.substring(0, 15) + (d.name.length > 15 ? '...' : '')),
+                    labels: varianceData.map(d => d.name),
                     datasets: [{
                         label: 'Variance %',
                         data: varianceData.map(d => d.pct),
                         borderColor: '#e74c3c',
                         backgroundColor: 'rgba(231, 76, 60, 0.2)',
-                        fill: true,
-                        tension: 0.4
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        title: { display: true, text: 'Top 10 Variance Items' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Variance: ${context.raw.toFixed(1)}%`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
+                    plugins: { title: { display: true, text: 'Top 10 Variance Items' } }
                 }
             });
         }
@@ -1098,21 +1202,6 @@
                 return matchesSearch && matchesCat;
             });
 
-            document.getElementById('inventory-count').innerText = `${data.length} items`;
-
-            if (data.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td colspan="14" class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <h3>No Inventory Items Found</h3>
-                        <p>Try changing your search or filter criteria</p>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-                return;
-            }
-
             data.forEach(row => {
                 const master = itemMaster.find(i => i.code === row.code);
                 if(!master) return;
@@ -1135,23 +1224,15 @@
                     <td>${master.name}</td>
                     <td><span class="badge cat-badge ${getCatClass(master.category)}">${master.category}</span></td>
                     <td>${row.branch}</td>
-                    <td class="text-right">${formatNumber(row.opening)}</td>
-                    <td class="text-right">${formatNumber(row.purchase)}</td>
-                    <td class="text-right">${formatNumber(row.closing)}</td>
-                    <td class="text-right text-danger">${formatNumber(row.waste)}</td>
-                    <td class="text-right" style="color:#7f8c8d;">${formatNumber(theoretical)}</td>
-                    <td class="text-right">${formatNumber(row.actual)}</td>
+                    <td class="text-right">${row.opening}</td>
+                    <td class="text-right">${row.purchase}</td>
+                    <td class="text-right">${row.closing}</td>
+                    <td class="text-right text-danger">${row.waste}</td>
+                    <td class="text-right" style="color:#7f8c8d;">${theoretical.toFixed(1)}</td>
+                    <td class="text-right">${row.actual}</td>
                     <td class="text-right ${Math.abs(varPct) > 5 ? 'text-danger' : 'text-success'}">${varPct}%</td>
                     <td class="text-right ${daysLeft < 2 ? 'text-danger' : ''}">${daysLeft}</td>
                     <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-outline" onclick="editInventoryEntry(${row.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline" onclick="deleteInventoryEntry(${row.id})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -1201,17 +1282,6 @@
         }
 
         // --- ADD ITEM ---
-        function populateItemSelect() {
-            const select = document.getElementById('entry-item-select');
-            select.innerHTML = '<option value="">-- Choose Item --</option>';
-            itemMaster.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item.code;
-                opt.innerText = `${item.code} - ${item.name}`;
-                select.appendChild(opt);
-            });
-        }
-
         function fillItemDetails() {
             const code = document.getElementById('entry-item-select').value;
             const item = itemMaster.find(i => i.code === code);
@@ -1229,14 +1299,7 @@
             const waste = parseFloat(document.getElementById('entry-waste').value) || 0;
 
             const theo = op + pur - clo - waste;
-            document.getElementById('entry-theoretical').value = formatNumber(theo);
-        }
-
-        function resetForm() {
-            document.querySelector('form').reset();
-            document.getElementById('entry-category').value = '';
-            document.getElementById('entry-uom').value = '';
-            document.getElementById('entry-theoretical').value = '';
+            document.getElementById('entry-theoretical').value = theo.toFixed(2);
         }
 
         function saveInventoryEntry() {
@@ -1256,109 +1319,20 @@
                 actual: parseFloat(document.getElementById('entry-actual').value) || 0
             };
 
-            // Check if entry already exists for this item+branch
-            const existingIndex = inventoryData.findIndex(item => 
-                item.code === code && item.branch === branch
-            );
-            
-            if (existingIndex > -1) {
-                if (confirm("An entry for this item and branch already exists. Update instead?")) {
-                    inventoryData[existingIndex] = { ...inventoryData[existingIndex], ...newEntry };
-                    showToast("Inventory entry updated successfully!", "success");
-                } else {
-                    return;
-                }
-            } else {
-                inventoryData.push(newEntry);
-                showToast("Inventory entry saved successfully!", "success");
-            }
-            
-            resetForm();
-            renderTable();
-            renderDashboard();
-            renderAlerts();
-        }
-
-        function editInventoryEntry(id) {
-            const entry = inventoryData.find(item => item.id === id);
-            if (!entry) return;
-            
-            switchTab('add-item', document.querySelectorAll('.nav-item')[4]);
-            
-            // Fill form with entry data
-            document.getElementById('entry-item-select').value = entry.code;
-            fillItemDetails();
-            document.getElementById('entry-branch').value = entry.branch;
-            document.getElementById('entry-opening').value = entry.opening;
-            document.getElementById('entry-purchase').value = entry.purchase;
-            document.getElementById('entry-closing').value = entry.closing;
-            document.getElementById('entry-waste').value = entry.waste;
-            document.getElementById('entry-actual').value = entry.actual;
-            autoCalculate();
-            
-            // Update form title
-            document.querySelector('#add-item .page-header h2').innerText = "Edit Inventory Entry";
-            
-            // Add update button
-            const submitBtn = document.querySelector('#add-item button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Entry';
-            submitBtn.onclick = function() { updateInventoryEntry(id); };
-        }
-
-        function updateInventoryEntry(id) {
-            const index = inventoryData.findIndex(item => item.id === id);
-            if (index === -1) return;
-            
-            inventoryData[index] = {
-                id: id,
-                code: document.getElementById('entry-item-select').value,
-                branch: document.getElementById('entry-branch').value,
-                opening: parseFloat(document.getElementById('entry-opening').value) || 0,
-                purchase: parseFloat(document.getElementById('entry-purchase').value) || 0,
-                closing: parseFloat(document.getElementById('entry-closing').value) || 0,
-                waste: parseFloat(document.getElementById('entry-waste').value) || 0,
-                actual: parseFloat(document.getElementById('entry-actual').value) || 0
-            };
-            
-            showToast("Inventory entry updated successfully!", "success");
-            resetForm();
-            document.querySelector('#add-item .page-header h2').innerText = "Add Inventory Entry";
-            const submitBtn = document.querySelector('#add-item button[type="submit"]');
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Entry';
-            submitBtn.onclick = function() { saveInventoryEntry(); };
+            inventoryData.push(newEntry);
+            showToast("Inventory entry saved successfully!", "success");
+            document.querySelector('form').reset();
+            document.getElementById('entry-theoretical').value = '';
             
             renderTable();
             renderDashboard();
             renderAlerts();
-        }
-
-        function deleteInventoryEntry(id) {
-            if (confirm("Are you sure you want to delete this inventory entry?")) {
-                inventoryData = inventoryData.filter(item => item.id !== id);
-                showToast("Inventory entry deleted successfully!", "success");
-                renderTable();
-                renderDashboard();
-                renderAlerts();
-            }
         }
 
         // --- SALES ENTRY ---
         function renderSalesTable() {
             const tbody = document.getElementById('sales-body');
             tbody.innerHTML = '';
-            
-            if (recipeData.length === 0) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td colspan="6" class="empty-state">
-                        <i class="fas fa-utensils"></i>
-                        <h3>No Recipes Found</h3>
-                        <p>Add recipes in the Recipe Master section first</p>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-                return;
-            }
             
             recipeData.forEach(item => {
                 const tr = document.createElement('tr');
@@ -1371,7 +1345,7 @@
                     <td><b>${item.name}</b></td>
                     <td>${item.uom}</td>
                     <td>AED ${item.price}</td>
-                    <td><input type="number" class="menu-input" min="0" value="0" onchange="updateRevenue(this, ${item.price})" oninput="updateRevenue(this, ${item.price})"></td>
+                    <td><input type="number" class="menu-input" min="0" onchange="updateRevenue(this, ${item.price})"></td>
                     <td class="row-total">AED 0.00</td>
                 `;
                 tbody.appendChild(tr);
@@ -1388,6 +1362,12 @@
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
+                    // Reset input if hidden to avoid phantom data
+                    const input = row.querySelector('input');
+                    if(input.value > 0) {
+                        input.value = 0;
+                        updateRevenue(input, parseFloat(row.cells[3].innerText.replace('AED ', '')));
+                    }
                 }
             });
         }
@@ -1404,34 +1384,18 @@
 
             // Update grand total
             let grandTotal = 0;
-            let totalItems = 0;
             document.querySelectorAll('.menu-input').forEach(inp => {
                 const q = parseFloat(inp.value) || 0;
                 const p = parseFloat(inp.closest('tr').cells[3].innerText.replace('AED ', ''));
                 grandTotal += (q * p);
-                totalItems += q;
             });
             document.getElementById('total-revenue-preview').innerText = `AED ${grandTotal.toFixed(2)}`;
-            document.getElementById('sales-summary').innerText = `${totalItems} items selected for posting`;
-        }
-
-        function clearAllSales() {
-            const inputs = document.querySelectorAll('.menu-input');
-            inputs.forEach(input => {
-                input.value = 0;
-                const row = input.closest('tr');
-                row.classList.remove('active-input');
-                row.querySelector('.row-total').innerText = 'AED 0.00';
-            });
-            document.getElementById('total-revenue-preview').innerText = 'AED 0.00';
-            document.getElementById('sales-summary').innerText = 'Ready to post consumption';
         }
 
         function postConsumption() {
             const branch = document.getElementById('sales-branch').value;
             const inputs = document.querySelectorAll('.menu-input');
             let totalPosted = 0;
-            let totalRevenue = 0;
             let ingredientsToUpdate = {}; // Map: Code -> Qty
 
             // 1. Gather Consumption
@@ -1454,7 +1418,6 @@
                             }
                         });
                         totalPosted += qty;
-                        totalRevenue += qty * menuData.price;
                     }
                 }
             });
@@ -1477,40 +1440,22 @@
                     record.actual += consumption;
                     updatedCount++;
                 } else {
-                    // Create a new record if none exists
-                    inventoryData.push({
-                        id: Date.now(),
-                        code: rawCode,
-                        branch: branch,
-                        opening: 0,
-                        purchase: 0,
-                        closing: 0,
-                        waste: 0,
-                        actual: consumption
-                    });
-                    updatedCount++;
+                    // If no record exists, create a basic one (Logic for opening/closing might be manual in this case)
+                    // For this demo, we just update existing to simulate "Adding to the current day's count"
+                    console.log(`No record found for ${rawCode} at ${branch}, skipping update.`);
                 }
             });
 
-            // 3. Create sales record (optional - could be stored separately)
-            const salesRecord = {
-                id: Date.now(),
-                branch: branch,
-                date: new Date().toISOString().split('T')[0],
-                totalItems: totalPosted,
-                totalRevenue: totalRevenue,
-                items: Array.from(inputs).filter(input => parseFloat(input.value) > 0).map(input => ({
-                    code: input.closest('tr').dataset.code,
-                    qty: parseFloat(input.value),
-                    price: parseFloat(input.closest('tr').cells[3].innerText.replace('AED ', ''))
-                }))
-            };
-
-            // 4. Feedback & Cleanup
-            showToast(`Posted ${totalPosted} sales (AED ${totalRevenue.toFixed(2)}). Updated ${updatedCount} ingredients.`, "success");
+            // 3. Feedback & Cleanup
+            showToast(`Posted ${totalPosted} sales. Updated Actual Usage for ${updatedCount} ingredients.`, "success");
             
             // Clear inputs
-            clearAllSales();
+            inputs.forEach(inp => {
+                inp.value = 0;
+                inp.closest('tr').classList.remove('active-input');
+                inp.closest('tr').querySelector('.row-total').innerText = 'AED 0.00';
+            });
+            document.getElementById('total-revenue-preview').innerText = 'AED 0.00';
 
             // Refresh Views
             renderTable();
@@ -1523,33 +1468,16 @@
             const container = document.getElementById('recipe-list-container');
             container.innerHTML = '';
 
-            if (recipeData.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-utensils"></i>
-                        <h3>No Recipes Found</h3>
-                        <p>Click "Add New Recipe" to create your first recipe</p>
-                    </div>
-                `;
-                return;
-            }
-
             recipeData.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'recipe-item';
                 div.dataset.code = item.code;
-                div.onclick = () => openEditRecipe(item.code);
                 div.innerHTML = `
                     <div>
                         <div style="font-weight:bold; font-size:13px;">${item.code}</div>
                         <div style="font-size:12px; color:#7f8c8d;">${item.name}</div>
-                        <div style="font-size:11px; color:var(--secondary);">AED ${item.price} | ${item.uom}</div>
                     </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline" onclick="event.stopPropagation(); openEditRecipe('${item.code}')" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="openEditRecipe('${item.code}')">Edit Recipe</button>
                 `;
                 container.appendChild(div);
             });
@@ -1558,27 +1486,15 @@
         function filterRecipeMaster() {
             const term = document.getElementById('recipeSearch').value.toLowerCase();
             const items = document.querySelectorAll('.recipe-item');
-            let visibleCount = 0;
             
             items.forEach(item => {
                 const text = item.innerText.toLowerCase();
                 if(text.includes(term)) {
                     item.style.display = 'flex';
-                    visibleCount++;
                 } else {
                     item.style.display = 'none';
                 }
             });
-
-            if (visibleCount === 0 && term) {
-                document.getElementById('recipe-list-container').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-search"></i>
-                        <h3>No Recipes Found</h3>
-                        <p>No recipes match "${term}"</p>
-                    </div>
-                `;
-            }
         }
 
         function openEditRecipe(code) {
@@ -1595,46 +1511,33 @@
                 
                 const rawName = rawItem ? rawItem.name : "Unknown Material";
                 const rawUom = rawItem ? rawItem.uom : "";
-                const rawCost = rawItem ? rawItem.cost : 0;
-                const ingredientCost = qty * rawCost;
                 
                 ingredientsHtml += `
                     <div class="ing-edit-row">
                         <div class="ing-edit-label">
                             <span style="font-weight:bold; color:var(--primary);">${rawCode}</span>
                             <br>${rawName} (${rawUom})
-                            <br><small style="color:#7f8c8d;">Cost: AED ${ingredientCost.toFixed(2)}</small>
                         </div>
-                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="${qty}" min="0">
+                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="${qty}">
                     </div>
                 `;
             });
-
-            // Calculate total cost
-            const totalCost = item.ing.reduce((sum, qty, index) => {
-                const rawCode = recipeMap[index];
-                const rawItem = itemMaster.find(i => i.code === rawCode);
-                return sum + (qty * (rawItem ? rawItem.cost : 0));
-            }, 0);
 
             panel.innerHTML = `
                 <div class="recipe-header" style="border-bottom: 2px solid var(--secondary); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h3 style="margin:0;">Edit Recipe: ${item.code}</h3>
-                        <div style="color:#7f8c8d; font-size:12px;">Total Cost: AED ${totalCost.toFixed(2)} | Profit Margin: ${((item.price - totalCost) / item.price * 100).toFixed(1)}%</div>
+                        <input type="hidden" id="edit-code" value="${item.code}">
+                        <div style="color:#7f8c8d; font-size:12px;">Code is read-only to preserve links.</div>
                     </div>
                     <div>
                         <button class="btn btn-sm btn-outline" onclick="closeEditPanel()">Cancel</button>
-                        <button class="btn btn-sm btn-primary" onclick="saveRecipeChanges()"><i class="fas fa-save"></i> Save Changes</button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDeleteRecipe('${item.code}')"><i class="fas fa-trash"></i> Delete</button>
+                    <button class="btn btn-sm btn-primary" onclick="saveRecipeChanges()"><i class="fas fa-save"></i> Save Changes</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteRecipe('${item.code}')"><i class="fas fa-trash"></i> Delete</button>
                     </div>
                 </div>
                 
                 <div class="edit-form-grid" style="margin-bottom: 20px;">
-                    <div class="form-group">
-                        <label>Menu Code</label>
-                        <input type="text" id="edit-code" value="${item.code}" readonly style="background:#f0f0f0;">
-                    </div>
                     <div class="form-group">
                         <label>Menu Name</label>
                         <input type="text" id="edit-name" value="${item.name}">
@@ -1645,14 +1548,12 @@
                     </div>
                     <div class="form-group">
                         <label>Price (AED)</label>
-                        <input type="number" step="0.01" id="edit-price" value="${item.price}" min="0">
+                        <input type="number" step="0.01" id="edit-price" value="${item.price}">
                     </div>
                 </div>
 
                 <h4 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">Recipe Ingredients</h4>
-                <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
-                    ${ingredientsHtml}
-                </div>
+                ${ingredientsHtml}
             `;
             
             panel.classList.add('active');
@@ -1673,7 +1574,7 @@
                             <span style="font-weight:bold; color:var(--primary);">${rawCode}</span>
                             <br>${rawName} (${rawUom})
                         </div>
-                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="0" min="0">
+                        <input type="number" step="0.01" class="ing-edit-input" id="ing_${index}" value="0">
                     </div>
                 `;
             });
@@ -1693,7 +1594,7 @@
                 <div class="edit-form-grid" style="margin-bottom: 20px;">
                     <div class="form-group">
                         <label>Menu Code</label>
-                        <input type="text" id="edit-code" placeholder="e.g., MI_211" maxlength="10" style="text-transform: uppercase;">
+                        <input type="text" id="edit-code" placeholder="e.g., MI_211" maxlength="5" style="text-transform: uppercase;">
                     </div>
                     <div class="form-group">
                         <label>Menu Name</label>
@@ -1705,29 +1606,19 @@
                     </div>
                     <div class="form-group">
                         <label>Price (AED)</label>
-                        <input type="number" step="0.01" id="edit-price" placeholder="0.00" min="0">
+                        <input type="number" step="0.01" id="edit-price" placeholder="0.00">
                     </div>
                 </div>
 
                 <h4 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">Recipe Ingredients</h4>
-                <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
-                    ${ingredientsHtml}
-                </div>
+                ${ingredientsHtml}
             `;
             
             panel.classList.add('active');
         }
 
         function closeEditPanel() {
-            const panel = document.getElementById('recipe-details-panel');
-            panel.classList.remove('active');
-            panel.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-utensils"></i>
-                    <h3>No Recipe Selected</h3>
-                    <p>Select a menu item from the list to view or edit its recipe.</p>
-                </div>
-            `;
+            document.getElementById('recipe-details-panel').classList.remove('active');
         }
 
         function saveRecipeChanges() {
@@ -1769,7 +1660,7 @@
         }
 
         function saveNewRecipe() {
-            const code = document.getElementById('edit-code').value.trim().toUpperCase();
+            const code = document.getElementById('edit-code').value.trim();
             const name = document.getElementById('edit-name').value;
             const uom = document.getElementById('edit-uom').value;
             const price = parseFloat(document.getElementById('edit-price').value) || 0;
@@ -1809,21 +1700,14 @@
             renderSalesTable();
         }
 
-        function confirmDeleteRecipe(code) {
-            openModal(
-                "Delete Recipe",
-                `Are you sure you want to delete recipe ${code}? This action cannot be undone.`,
-                () => deleteRecipe(code)
-            );
-        }
-
         function deleteRecipe(code) {
-            recipeData = recipeData.filter(r => r.code !== code);
-            showToast(`Recipe ${code} deleted.`, "success");
-            closeEditPanel();
-            renderRecipeMasterList();
-            renderSalesTable();
-            closeModal();
+            if(confirm(`Are you sure you want to delete recipe ${code}?`)) {
+                recipeData = recipeData.filter(r => r.code !== code);
+                showToast(`Recipe ${code} deleted.`, "success");
+                closeEditPanel();
+                renderRecipeMasterList();
+                renderSalesTable();
+            }
         }
 
         function exportRecipes() {
@@ -1837,7 +1721,6 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(url);
             showToast("Recipe list exported successfully!", "success");
         }
 
@@ -1850,22 +1733,17 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if(Array.isArray(importedData)) {
-                        openModal(
-                            "Import Recipes",
-                            `This will replace your current recipe list with ${importedData.length} items. Continue?`,
-                            () => {
-                                recipeData = importedData;
-                                renderRecipeMasterList();
-                                renderSalesTable();
-                                showToast("Recipes imported successfully!", "success");
-                                closeModal();
-                            }
-                        );
+                        if(confirm(`This will replace your current recipe list with ${importedData.length} items. Continue?`)) {
+                            recipeData = importedData;
+                            renderRecipeMasterList();
+                            renderSalesTable();
+                            showToast("Recipes imported successfully!", "success");
+                        }
                     } else {
                         showToast("Invalid file format.", "error");
                     }
                 } catch (err) {
-                    showToast("Error reading file: " + err.message, "error");
+                    showToast("Error reading file.", "error");
                 }
             };
             reader.readAsText(file);
@@ -1889,19 +1767,13 @@
                 const daysLeft = dailyUsage > 0 ? row.closing / dailyUsage : 999;
 
                 if (daysLeft < 2) {
-                    alerts.push({ type: 'danger', icon: 'fa-exclamation-triangle', title: 'Critical Stock Level', 
-                        msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} has only ${daysLeft.toFixed(1)} days left.` });
+                    alerts.push({ type: 'danger', icon: 'fa-exclamation-triangle', title: 'Critical Stock Level', msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} has only ${daysLeft.toFixed(1)} days left.` });
                 } else if (daysLeft < 5) {
-                    alerts.push({ type: 'warning', icon: 'fa-clock', title: 'Low Stock Warning', 
-                        msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} is running low (${daysLeft.toFixed(1)} days).` });
+                    alerts.push({ type: 'warning', icon: 'fa-clock', title: 'Low Stock Warning', msg: `${master.name} at ${branches.find(b=>b.code===row.branch)?.name} is running low (${daysLeft.toFixed(1)} days).` });
                 }
 
-                if (varPct > 15) {
-                    alerts.push({ type: 'danger', icon: 'fa-balance-scale', title: 'High Variance Alert', 
-                        msg: `${master.name} at ${row.branch} has a variance of ${varPct.toFixed(1)}%.` });
-                } else if (varPct > 10) {
-                    alerts.push({ type: 'warning', icon: 'fa-balance-scale', title: 'Moderate Variance', 
-                        msg: `${master.name} at ${row.branch} has a variance of ${varPct.toFixed(1)}%.` });
+                if (varPct > 10) {
+                    alerts.push({ type: 'warning', icon: 'fa-balance-scale', title: 'High Variance Detected', msg: `${master.name} at ${row.branch} has a variance of ${varPct.toFixed(1)}%.` });
                 }
             });
 
@@ -1914,33 +1786,13 @@
                 const div = document.createElement('div');
                 div.className = `alert-box alert-${alert.type}`;
                 div.innerHTML = `
-                    <div style="display: flex; align-items: flex-start; gap: 15px;">
-                        <i class="fas ${alert.icon}" style="font-size: 20px; margin-top: 2px;"></i>
-                        <div>
-                            <strong>${alert.title}</strong><br>
-                            <span style="font-size:14px;">${alert.msg}</span>
-                        </div>
+                    <div>
+                        <strong><i class="fas ${alert.icon}"></i> ${alert.title}</strong><br>
+                        <span style="font-size:14px;">${alert.msg}</span>
                     </div>
                 `;
                 container.appendChild(div);
             });
-        }
-
-        function refreshAlerts() {
-            renderAlerts();
-            showToast("Alerts refreshed");
-        }
-
-        // --- MODAL FUNCTIONS ---
-        function openModal(title, message, onConfirm) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            document.getElementById('modal-confirm-btn').onclick = onConfirm;
-            document.getElementById('modal-overlay').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('modal-overlay').classList.add('hidden');
         }
 
         // --- UTILS ---
@@ -1949,8 +1801,8 @@
             const toast = document.createElement('div');
             toast.className = 'toast';
             
-            const color = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--warning)';
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
+            const color = type === 'success' ? 'var(--success)' : 'var(--danger)';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
             
             toast.style.borderLeftColor = color;
             toast.innerHTML = `
@@ -1969,55 +1821,30 @@
 
         function exportData() {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Code,Name,Category,Branch,Opening,Purchase,Closing,Waste,Theoretical,Actual,Variance%,DaysLeft,Status\n";
+            csvContent += "Code,Name,Category,Branch,Opening,Purchase,Closing,Waste,Actual,Variance%,Status\n";
 
             const data = getFilteredData();
             data.forEach(row => {
                 const m = itemMaster.find(i => i.code === row.code);
                 const theo = row.opening + row.purchase - row.closing - row.waste;
                 const varPct = theo !== 0 ? ((row.actual - theo) / theo * 100).toFixed(2) : 0;
-                const dailyUsage = theo / 30;
-                const daysLeft = dailyUsage > 0 ? (row.closing / dailyUsage).toFixed(1) : 0;
                 
-                csvContent += `${row.code},"${m.name}",${m.category},${row.branch},${row.opening},${row.purchase},${row.closing},${row.waste},${theoretical.toFixed(2)},${row.actual},${varPct},${daysLeft},""\n`;
+                csvContent += `${row.code},"${m.name}",${m.category},${row.branch},${row.opening},${row.purchase},${row.closing},${row.waste},${row.actual},${varPct}%,\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `inventory_export_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute("download", "inventory_export.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("Data exported successfully!", "success");
         }
 
         function refreshDashboard() {
             renderDashboard();
-            showToast("Dashboard updated", "success");
+            showToast("Dashboard updated");
         }
-
-        function updateBranchFilter() {
-            currentBranchFilter = document.getElementById('globalBranchFilter').value;
-            renderTable();
-            renderDashboard();
-            renderAlerts();
-        }
-
-        function formatNumber(num) {
-            if (num === undefined || num === null) return '0';
-            return Number(num).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('modal-overlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
 
     </script>
 </body>
